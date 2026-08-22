@@ -21,11 +21,11 @@
   --shadow-md:
     0 20px 48px rgba(0, 0, 0, 0.3),
     0 1px 0 rgba(255, 255, 255, 0.03) inset;
-  --radius-xl: 34px;
-  --radius-lg: 24px;
-  --radius-md: 18px;
-  --radius-sm: 14px;
-  --max: 1180px;
+  --radius-xl: 30px;
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --radius-sm: 12px;
+  --max: 1120px;
   --expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -127,7 +127,7 @@ p {
   isolation: isolate;
   width: min(calc(100% - 32px), var(--max));
   margin: 0 auto;
-  padding: 20px 0 44px;
+  padding: 16px 0 36px;
 }
 
 .page-ambient {
@@ -235,8 +235,8 @@ p {
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  padding: 16px 18px;
-  border-radius: 24px;
+  padding: 14px 16px;
+  border-radius: 22px;
   backdrop-filter: blur(22px);
 }
 
@@ -452,7 +452,7 @@ button:focus-visible {
   grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
   gap: 22px;
   align-items: stretch;
-  padding: 24px 0 18px;
+  padding: 20px 0 12px;
 }
 
 .hero-copy,
@@ -461,7 +461,7 @@ button:focus-visible {
 }
 
 .hero-copy {
-  padding: 42px;
+  padding: 32px;
   overflow: hidden;
 }
 
@@ -488,7 +488,7 @@ button:focus-visible {
 .hero-copy h1,
 .admin-hero h1 {
   max-width: 11ch;
-  font-size: clamp(3.2rem, 6.4vw, 6.2rem);
+  font-size: clamp(2.6rem, 5vw, 4.6rem);
   background: linear-gradient(135deg, #ffffff 8%, #8cc8ff 42%, #d9f7ff 72%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -498,16 +498,16 @@ button:focus-visible {
 
 .lede {
   max-width: 62ch;
-  margin-top: 20px;
-  font-size: 1.06rem;
-  line-height: 1.76;
+  margin-top: 16px;
+  font-size: 0.98rem;
+  line-height: 1.66;
 }
 
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-top: 28px;
+  margin-top: 22px;
 }
 
 .trust-row {
@@ -516,7 +516,7 @@ button:focus-visible {
   gap: 10px;
   list-style: none;
   padding: 0;
-  margin: 28px 0 0;
+  margin: 22px 0 0;
 }
 
 .trust-row li,
@@ -542,9 +542,9 @@ button:focus-visible {
 }
 
 .hero-card {
-  padding: 22px;
+  padding: 18px;
   display: grid;
-  gap: 16px;
+  gap: 12px;
   align-content: start;
 }
 
@@ -557,7 +557,7 @@ button:focus-visible {
 .hero-stat {
   display: grid;
   gap: 4px;
-  padding: 18px 18px 20px;
+  padding: 16px 16px 18px;
   border-radius: var(--radius-lg);
   background:
     linear-gradient(180deg, rgba(94, 161, 255, 0.16), rgba(255, 255, 255, 0.03)),
@@ -566,13 +566,13 @@ button:focus-visible {
 }
 
 .hero-stat strong {
-  font-size: 3rem;
+  font-size: 2.2rem;
   font-family: var(--font-mono), "SFMono-Regular", monospace;
   letter-spacing: -0.08em;
 }
 
 .hero-panel {
-  padding: 20px;
+  padding: 16px;
   border-radius: var(--radius-lg);
   background: linear-gradient(180deg, rgba(8, 11, 17, 0.92), rgba(12, 15, 22, 0.92));
   border: 1px solid var(--line);
@@ -589,7 +589,7 @@ button:focus-visible {
 
 .hero-panel h2 {
   margin-bottom: 10px;
-  font-size: 2rem;
+  font-size: 1.55rem;
   line-height: 0.98;
 }
 
@@ -598,62 +598,63 @@ button:focus-visible {
   align-items: center;
   justify-content: center;
   margin-top: 12px;
-  min-height: 54px;
-  padding: 0 18px;
-  border-radius: 16px;
+  min-height: 46px;
+  padding: 0 14px;
+  border-radius: 14px;
   background: linear-gradient(135deg, rgba(94, 161, 255, 0.2), rgba(126, 231, 255, 0.88));
   color: #06111c;
   font-weight: 800;
-  font-size: 1.35rem;
+  font-size: 1.1rem;
   box-shadow: 0 16px 30px rgba(94, 161, 255, 0.16);
 }
 
 .feature-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 16px;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .feature-grid div {
-  padding: 12px 14px;
-  border-radius: 16px;
+  padding: 10px 12px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--line);
   font-weight: 700;
 }
 
 .section {
-  margin-top: 22px;
-  padding: 34px;
+  margin-top: 18px;
+  padding: 26px;
   border-radius: var(--radius-xl);
   backdrop-filter: blur(20px);
 }
 
 .section-heading {
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .section-heading h2 {
   max-width: 18ch;
-  font-size: clamp(2rem, 3vw, 3rem);
+  font-size: clamp(1.6rem, 2.4vw, 2.4rem);
 }
 
 .section-heading p {
   max-width: 68ch;
-  line-height: 1.72;
+  line-height: 1.64;
+  font-size: 0.98rem;
 }
 
 .package-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  gap: 12px;
 }
 
 .package-card {
   display: grid;
-  gap: 8px;
-  padding: 22px;
+  gap: 6px;
+  padding: 18px;
   border-radius: var(--radius-lg);
   text-align: left;
   cursor: pointer;
@@ -671,11 +672,11 @@ button:focus-visible {
 }
 
 .package-name {
-  font-size: 1.55rem;
+  font-size: 1.25rem;
 }
 
 .package-price {
-  font-size: 2rem;
+  font-size: 1.55rem;
   font-weight: 800;
   letter-spacing: -0.06em;
 }
@@ -694,14 +695,14 @@ button:focus-visible {
 
 .split-section {
   grid-template-columns: minmax(0, 0.96fr) minmax(0, 1.04fr);
-  align-items: center;
+  align-items: start;
 }
 
 .bullet-list {
   margin: 20px 0 0;
   padding-left: 18px;
   color: #eaf1ff;
-  line-height: 1.88;
+  line-height: 1.74;
 }
 
 .photo-stack {
@@ -716,9 +717,9 @@ button:focus-visible {
 }
 
 .photo-card {
-  min-height: 190px;
+  min-height: 168px;
   border-radius: var(--radius-lg);
-  padding: 18px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -735,7 +736,7 @@ button:focus-visible {
 }
 
 .photo-card-large {
-  min-height: 290px;
+  min-height: 260px;
 }
 
 .photo-card img,
@@ -775,6 +776,7 @@ button:focus-visible {
 
 .payment-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .payment-card,
@@ -788,20 +790,20 @@ button:focus-visible {
 .payment-card,
 .summary-card,
 .faq-card {
-  padding: 22px;
+  padding: 18px;
 }
 
 .payment-card h3,
 .faq-card h3,
 .summary-card h3 {
   margin-bottom: 10px;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
 }
 
 .payment-card ul {
-  margin: 16px 0 0;
+  margin: 12px 0 0;
   padding-left: 18px;
-  line-height: 1.85;
+  line-height: 1.72;
 }
 
 .qr-image {
@@ -812,10 +814,11 @@ button:focus-visible {
 
 .booking-grid {
   grid-template-columns: minmax(0, 1.14fr) minmax(320px, 0.86fr);
+  gap: 14px;
 }
 
 .booking-form {
-  padding: 22px;
+  padding: 18px;
 }
 
 .form-row {
@@ -897,12 +900,12 @@ button:focus-visible {
   display: inline-flex;
   align-items: center;
   width: fit-content;
-  min-height: 50px;
-  padding: 0 16px;
-  border-radius: 16px;
+  min-height: 42px;
+  padding: 0 12px;
+  border-radius: 14px;
   background: rgba(94, 161, 255, 0.12);
   color: #d7eaff;
-  font-size: 1.6rem;
+  font-size: 1.2rem;
   font-weight: 800;
 }
 
@@ -957,6 +960,7 @@ button:focus-visible {
 
 .faq-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .faq-card p {
@@ -969,7 +973,7 @@ button:focus-visible {
   justify-content: space-between;
   gap: 18px;
   margin-top: 22px;
-  padding: 20px 24px;
+  padding: 18px 20px;
   border-radius: 24px;
   backdrop-filter: blur(18px);
 }
@@ -990,7 +994,7 @@ button:focus-visible {
 
 .hero-visual {
   border-radius: var(--radius-xl);
-  padding: 18px;
+  padding: 16px;
   display: grid;
   gap: 16px;
   align-content: start;
@@ -998,7 +1002,7 @@ button:focus-visible {
 
 .hero-visual-media {
   position: relative;
-  min-height: 300px;
+  min-height: 260px;
   overflow: hidden;
   border-radius: 24px;
   background:
@@ -1010,7 +1014,7 @@ button:focus-visible {
 .hero-visual-media img {
   width: 100%;
   height: 100%;
-  min-height: 300px;
+  min-height: 260px;
   object-fit: cover;
   display: block;
   filter: saturate(0.96) contrast(1.03);
@@ -1037,14 +1041,14 @@ button:focus-visible {
 .hero-visual-stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 
 .hero-visual-stats div {
   display: grid;
   gap: 4px;
-  padding: 12px 14px;
-  border-radius: 16px;
+  padding: 10px 12px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--line);
 }
@@ -1060,7 +1064,7 @@ button:focus-visible {
 
 .admin-main {
   display: grid;
-  gap: 22px;
+  gap: 18px;
 }
 
 .admin-hero h1 {
@@ -1075,11 +1079,11 @@ button:focus-visible {
 }
 
 .admin-login {
-  padding: 22px;
+  padding: 18px;
 }
 
 .admin-status {
-  padding: 16px 18px;
+  padding: 14px 16px;
   color: var(--text);
 }
 
@@ -1105,11 +1109,11 @@ button:focus-visible {
 .admin-price-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  gap: 12px;
 }
 
 .admin-price-card {
-  padding: 22px;
+  padding: 18px;
   border-radius: var(--radius-lg);
 }
 
@@ -1131,7 +1135,7 @@ button:focus-visible {
 
 .admin-price-head strong {
   font-family: var(--font-mono), monospace;
-  font-size: 2rem;
+  font-size: 1.6rem;
   letter-spacing: -0.06em;
 }
 
@@ -1156,7 +1160,7 @@ button:focus-visible {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  margin: 16px 0 4px;
+  margin: 12px 0 4px;
   font-size: 0.92rem;
 }
 
@@ -1164,19 +1168,19 @@ button:focus-visible {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 16px;
+  margin-top: 12px;
 }
 
 .admin-booking-layout {
   display: grid;
   grid-template-columns: minmax(260px, 0.9fr) minmax(320px, 1.1fr);
-  gap: 18px;
+  gap: 14px;
 }
 
 .admin-bookings-list {
   display: grid;
-  gap: 10px;
-  max-height: 780px;
+  gap: 8px;
+  max-height: 720px;
   overflow: auto;
   padding-right: 2px;
 }
@@ -1184,8 +1188,8 @@ button:focus-visible {
 .admin-booking-item {
   width: 100%;
   text-align: left;
-  padding: 16px;
-  border-radius: 20px;
+  padding: 14px;
+  border-radius: 18px;
   display: grid;
   gap: 6px;
   cursor: pointer;
@@ -1213,10 +1217,10 @@ button:focus-visible {
 }
 
 .admin-detail {
-  padding: 22px;
+  padding: 18px;
   border-radius: var(--radius-lg);
   display: grid;
-  gap: 16px;
+  gap: 12px;
 }
 
 .admin-detail-head {
@@ -1227,18 +1231,18 @@ button:focus-visible {
 }
 
 .admin-detail-head h3 {
-  font-size: 1.9rem;
+  font-size: 1.5rem;
 }
 
 .admin-detail-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 
 .admin-detail-grid div {
-  padding: 12px 14px;
-  border-radius: 16px;
+  padding: 10px 12px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--line);
 }
@@ -1263,7 +1267,7 @@ button:focus-visible {
 }
 
 .notification-card {
-  padding: 22px;
+  padding: 18px;
 }
 
 .notification-card strong {
@@ -1344,7 +1348,7 @@ button:focus-visible {
   .admin-detail,
   .admin-price-card,
   .notification-card {
-    padding: 18px;
+    padding: 16px;
   }
 
   .hero-copy {
@@ -1357,11 +1361,11 @@ button:focus-visible {
 
   .hero-copy h1,
   .admin-hero h1 {
-    font-size: clamp(2.8rem, 12vw, 4.2rem);
+    font-size: clamp(2.4rem, 11vw, 3.6rem);
   }
 
   .section-heading h2 {
-    font-size: clamp(1.7rem, 7vw, 2.4rem);
+    font-size: clamp(1.45rem, 6.5vw, 2rem);
   }
 
   .form-row,

@@ -260,10 +260,10 @@ export default function Home() {
         <section className="hero">
           <SpotlightSurface as="section" className="hero-copy">
             <p className="eyebrow">Saga X Space, Senawang</p>
-            <h1>Reserve the hall with a premium flow that feels effortless.</h1>
+            <h1>Book the hall with a clean, compact checkout flow.</h1>
             <p className="lede">
-              A clean booking experience for Saga X Ventures: live package selection, Billplz FPX,
-              manual bank transfer, QR payment, and automatic invoice delivery through Resend.
+              Live package selection, Billplz FPX, manual transfer, QR payment, and invoice delivery
+              through Resend in one simple booking path.
             </p>
 
             <div className="hero-actions">
@@ -335,10 +335,10 @@ export default function Home() {
         <section id="pricing" className="section">
           <div className="section-heading">
             <p className="eyebrow">Packages</p>
-            <h2>Clear package pricing with promo overrides when you need them.</h2>
+            <h2>Simple package pricing with promo overrides when needed.</h2>
             <p>
-              Keep the default price list for quick decisions, then switch on a promo rate from the
-              admin area whenever you want to run a special offer.
+              Keep the default price list for quick decisions, then turn on a promo rate from the
+              admin area whenever you run a special offer.
             </p>
           </div>
 
@@ -371,10 +371,10 @@ export default function Home() {
         <section id="gallery" className="section split-section">
           <div className="section-heading">
             <p className="eyebrow">Venue details</p>
-            <h2>Designed for productive sessions with a calm, office-like feel.</h2>
+            <h2>Calm, office-like space for productive sessions.</h2>
             <p>
-              The hall works for workshops, small seminars, classes, and team meetings. It stays
-              practical, neat, and comfortable so your event feels organized from the start.
+              The hall works for workshops, small seminars, classes, and team meetings while keeping
+              the setup neat and practical.
             </p>
 
             <ul className="bullet-list">
@@ -416,10 +416,10 @@ export default function Home() {
         <section id="payment" className="section payment-section">
           <div className="section-heading">
             <p className="eyebrow">Payment</p>
-            <h2>Support Billplz FPX, manual transfer, and QR payment in one flow.</h2>
+            <h2>Billplz FPX, manual transfer, and QR payment.</h2>
             <p>
-              Customers can pay immediately through Billplz, transfer manually to your bank
-              account, or scan the QR image you provided for faster checkout.
+              Customers can pay instantly through Billplz, transfer manually to your bank account,
+              or scan the QR image for a faster checkout.
             </p>
           </div>
 
@@ -464,10 +464,10 @@ export default function Home() {
         <section id="booking" className="section booking-section">
           <div className="section-heading">
             <p className="eyebrow">Booking</p>
-            <h2>One screen to capture the booking, invoice, and payment intent.</h2>
+            <h2>Capture booking, invoice, and payment in one screen.</h2>
             <p>
-              The flow stays short on purpose so your customer can reserve the slot quickly without
-              a long checkout process.
+              The flow stays short so your customer can reserve the slot quickly without a long
+              checkout process.
             </p>
           </div>
 
@@ -610,7 +610,7 @@ export default function Home() {
         <section className="section faq-section">
           <div className="section-heading">
             <p className="eyebrow">FAQ</p>
-            <h2>Keep the common questions in plain sight.</h2>
+            <h2>Common questions, kept simple.</h2>
           </div>
 
           <div className="faq-grid">

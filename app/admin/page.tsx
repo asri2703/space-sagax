@@ -356,7 +356,7 @@ export default function AdminPage() {
         <section className="section admin-hero">
           <div className="section-heading">
             <p className="eyebrow">Admin dashboard</p>
-            <h1>Keep default pricing intact, then layer promo pricing when needed.</h1>
+            <h1>Keep default pricing intact, then add promo pricing when needed.</h1>
             <p>
               The base price list stays fixed at RM60, RM180, and RM300. When you need a special rate,
               set a promo price here and the booking page will pick it up automatically.
