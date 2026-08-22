@@ -1,10 +1,21 @@
 import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+const geistSans = Geist({
+  subsets: ["latin"],
+  variable: "--font-sans",
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+});
+
 export const metadata: Metadata = {
-  title: "Saga X Space",
+  title: "Saga X Space Booking",
   description:
-    "Book Saga X Space for meetings, classes, workshops, and seminars. Pay by Billplz FPX, bank transfer, or QR.",
+    "Premium hall rental booking for Saga X Ventures with live pricing, Billplz FPX, bank transfer, QR payment, and automated invoice delivery.",
 };
 
 export default function RootLayout({
@@ -14,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>{children}</body>
     </html>
   );
 }

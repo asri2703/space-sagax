@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { SpotlightSurface } from "@/components/spotlight-surface";
 
 type Override = {
   amount_cents: number;
@@ -84,7 +85,7 @@ function PricingCard({
   }, [override]);
 
   return (
-    <article className="admin-price-card" data-package={packageKey}>
+    <SpotlightSurface as="article" className="admin-price-card" data-package={packageKey}>
       <div className="admin-price-head">
         <div>
           <p className="admin-kicker">{data?.title || packageKey}</p>
@@ -148,7 +149,7 @@ function PricingCard({
           Reset
         </button>
       </div>
-    </article>
+    </SpotlightSurface>
   );
 }
 
@@ -162,6 +163,7 @@ export default function AdminPage() {
   const [statusMessage, setStatusMessage] = useState("");
   const [statusKind, setStatusKind] = useState<"info" | "success" | "error">("info");
   const [isLoading, setIsLoading] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const selectedBooking = useMemo(
     () => bookings.find((item) => item.reference === selectedReference) || null,
@@ -297,7 +299,7 @@ export default function AdminPage() {
 
   return (
     <div className="page-shell admin-shell">
-      <header className="topbar">
+      <header className={`topbar ${isMenuOpen ? "is-open" : ""}`}>
         <div className="brand">
           <div className="brand-mark" aria-hidden="true" />
           <div>
@@ -307,14 +309,47 @@ export default function AdminPage() {
         </div>
 
         <nav className="topnav" aria-label="Admin primary">
-          <a href="#pricing">Pricing</a>
-          <a href="#bookings">Bookings</a>
-          <a href="#notifications">Notifications</a>
+          <a href="#pricing" onClick={() => setIsMenuOpen(false)}>
+            Pricing
+          </a>
+          <a href="#bookings" onClick={() => setIsMenuOpen(false)}>
+            Bookings
+          </a>
+          <a href="#notifications" onClick={() => setIsMenuOpen(false)}>
+            Notifications
+          </a>
         </nav>
 
-        <a className="btn btn-ghost" href="/" rel="noreferrer">
-          Public site
-        </a>
+        <div className="topbar-actions">
+          <a className="btn btn-ghost" href="/" rel="noreferrer">
+            Public site
+          </a>
+          <button
+            type="button"
+            className="menu-button"
+            aria-expanded={isMenuOpen}
+            aria-controls="admin-mobile-nav"
+            aria-label="Toggle admin navigation menu"
+            onClick={() => setIsMenuOpen((current) => !current)}
+          >
+            <span aria-hidden="true" />
+          </button>
+        </div>
+
+        <div id="admin-mobile-nav" className="mobile-nav-panel" hidden={!isMenuOpen}>
+          <a href="#pricing" onClick={() => setIsMenuOpen(false)}>
+            Pricing
+          </a>
+          <a href="#bookings" onClick={() => setIsMenuOpen(false)}>
+            Bookings
+          </a>
+          <a href="#notifications" onClick={() => setIsMenuOpen(false)}>
+            Notifications
+          </a>
+          <a href="/" onClick={() => setIsMenuOpen(false)}>
+            Public site
+          </a>
+        </div>
       </header>
 
       <main className="admin-main">
@@ -328,7 +363,7 @@ export default function AdminPage() {
             </p>
           </div>
 
-          <div className="admin-login">
+          <SpotlightSurface as="article" className="admin-login">
             <label>
               Admin access key
               <input
@@ -346,12 +381,12 @@ export default function AdminPage() {
               </button>
               <p>Key is stored in session only for this browser tab.</p>
             </div>
-          </div>
+          </SpotlightSurface>
 
           {statusMessage ? (
-            <div className={`admin-status is-${statusKind}`} id="admin-status">
+            <SpotlightSurface as="div" className={`admin-status is-${statusKind}`} id="admin-status">
               {statusMessage}
-            </div>
+            </SpotlightSurface>
           ) : null}
         </section>
 
@@ -430,7 +465,7 @@ export default function AdminPage() {
               )}
             </div>
 
-            <aside className="admin-detail" id="admin-booking-detail">
+            <aside className="admin-detail-shell" id="admin-booking-detail">
               {selectedBooking ? (
                 <BookingDetail
                   booking={selectedBooking}
@@ -454,10 +489,10 @@ export default function AdminPage() {
             </p>
           </div>
 
-          <div className="notification-card">
+          <SpotlightSurface as="div" className="notification-card">
             <strong>Tip</strong>
             <p>Click the WhatsApp button inside a booking to open a prefilled alert on mobile or desktop WhatsApp Web.</p>
-          </div>
+          </SpotlightSurface>
         </section>
       </main>
     </div>
@@ -494,7 +529,7 @@ function BookingDetail({
   const bookingAmount = formatMyr(booking.amount_cents || 0);
 
   return (
-    <>
+    <SpotlightSurface as="div" className="admin-detail">
       <div className="admin-detail-head">
         <div>
           <p className="admin-kicker">{booking.reference}</p>
@@ -584,6 +619,6 @@ function BookingDetail({
           WhatsApp alert
         </a>
       </div>
-    </>
+    </SpotlightSurface>
   );
 }

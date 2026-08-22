@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useEffect, useState, type ReactNode } from "react";
+import { SpotlightSurface } from "@/components/spotlight-surface";
 
 type PackageState = {
   title: string;
@@ -19,17 +20,20 @@ type PublicConfig = {
   bank_account_number: string;
   whatsapp: string;
   payment_qr_url: string;
-  packages: Record<string, {
-    key: string;
-    title: string;
-    copy: string;
-    base_amount_cents: number;
-    base_human_price: string;
-    amount_cents: number;
-    human_price: string;
-    promo_label: string;
-    is_promo: boolean;
-  }>;
+  packages: Record<
+    string,
+    {
+      key: string;
+      title: string;
+      copy: string;
+      base_amount_cents: number;
+      base_human_price: string;
+      amount_cents: number;
+      human_price: string;
+      promo_label: string;
+      is_promo: boolean;
+    }
+  >;
 };
 
 const defaultPackages: Record<string, PackageState> = {
@@ -37,19 +41,19 @@ const defaultPackages: Record<string, PackageState> = {
     title: "Hall 1 Hour",
     price: "RM60.00",
     amountCents: 6000,
-    copy: "Best for short meetings or quick sessions.",
+    copy: "Best for short meetings, quick sessions, and fast team catch-ups.",
   },
   four: {
     title: "Hall 4 Hour",
     price: "RM180.00",
     amountCents: 18000,
-    copy: "Best value for workshops, training, and half-day sessions.",
+    copy: "Ideal for workshops, training, and half-day sessions with proper setup time.",
   },
   full: {
     title: "Hall Full Day",
     price: "RM300.00",
     amountCents: 30000,
-    copy: "Best value for full-day events and training.",
+    copy: "Best value for seminars, all-day classes, and event programs.",
   },
 };
 
@@ -62,10 +66,22 @@ export default function Home() {
   const [selectedPackage, setSelectedPackage] = useState("four");
   const [paymentMethod, setPaymentMethod] = useState("billplz");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [bookingResult, setBookingResult] = useState<React.ReactNode>(
-    "Fill in the form and choose a payment method to create a live booking request."
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [bookingResult, setBookingResult] = useState<ReactNode>(
+    "Choose a package, fill in the form, and we will prepare the invoice."
   );
   const [publicConfig, setPublicConfig] = useState<PublicConfig | null>(null);
+
+  useEffect(() => {
+    const syncScroll = () => {
+      const shift = Math.min(window.scrollY * 0.12, 64);
+      document.documentElement.style.setProperty("--scroll-shift", `${shift}px`);
+    };
+
+    syncScroll();
+    window.addEventListener("scroll", syncScroll, { passive: true });
+    return () => window.removeEventListener("scroll", syncScroll);
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -112,7 +128,6 @@ export default function Home() {
   }, []);
 
   const active = packages[selectedPackage] || packages.four;
-  const paymentUrl = "";
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -173,8 +188,10 @@ export default function Home() {
   }
 
   return (
-    <div className="page-shell">
-      <header className="topbar">
+    <div className={`page-shell ${isMenuOpen ? "menu-open" : ""}`}>
+      <div className="page-ambient" aria-hidden="true" />
+
+      <header className={`topbar ${isMenuOpen ? "is-open" : ""}`}>
         <div className="brand">
           <div className="brand-mark" aria-hidden="true" />
           <div>
@@ -184,76 +201,144 @@ export default function Home() {
         </div>
 
         <nav className="topnav" aria-label="Primary">
-          <a href="#pricing">Pricing</a>
-          <a href="#gallery">Gallery</a>
-          <a href="#payment">Payment</a>
-          <a href="#booking">Booking</a>
-          <a href="/admin">Admin</a>
+          <a href="#pricing" onClick={() => setIsMenuOpen(false)}>
+            Packages
+          </a>
+          <a href="#gallery" onClick={() => setIsMenuOpen(false)}>
+            Venue
+          </a>
+          <a href="#payment" onClick={() => setIsMenuOpen(false)}>
+            Payment
+          </a>
+          <a href="#booking" onClick={() => setIsMenuOpen(false)}>
+            Booking
+          </a>
+          <a href="/admin" onClick={() => setIsMenuOpen(false)}>
+            Admin
+          </a>
         </nav>
 
-        <a className="btn btn-ghost" href="https://wa.me/60137732703" target="_blank" rel="noreferrer">
-          WhatsApp
-        </a>
+        <div className="topbar-actions">
+          <a className="btn btn-secondary" href="#booking">
+            Book now
+          </a>
+          <a className="btn btn-ghost" href="https://wa.me/60137732703" target="_blank" rel="noreferrer">
+            WhatsApp
+          </a>
+          <button
+            type="button"
+            className="menu-button"
+            aria-expanded={isMenuOpen}
+            aria-controls="mobile-nav-panel"
+            aria-label="Toggle navigation menu"
+            onClick={() => setIsMenuOpen((current) => !current)}
+          >
+            <span aria-hidden="true" />
+          </button>
+        </div>
+
+        <div id="mobile-nav-panel" className="mobile-nav-panel" hidden={!isMenuOpen}>
+          <a href="#pricing" onClick={() => setIsMenuOpen(false)}>
+            Packages
+          </a>
+          <a href="#gallery" onClick={() => setIsMenuOpen(false)}>
+            Venue
+          </a>
+          <a href="#payment" onClick={() => setIsMenuOpen(false)}>
+            Payment
+          </a>
+          <a href="#booking" onClick={() => setIsMenuOpen(false)}>
+            Booking
+          </a>
+          <a href="/admin" onClick={() => setIsMenuOpen(false)}>
+            Admin
+          </a>
+        </div>
       </header>
 
       <main>
         <section className="hero">
-          <div className="hero-copy">
+          <SpotlightSurface as="section" className="hero-copy">
             <p className="eyebrow">Saga X Space, Senawang</p>
-            <h1>Book a clean, flexible hall for meetings, classes, and seminars.</h1>
+            <h1>Reserve the hall with a premium flow that feels effortless.</h1>
             <p className="lede">
-              A practical booking flow for the Saga X hall rental business. Choose a package,
-              confirm availability, pay by Billplz FPX or manual transfer, then receive your invoice automatically.
+              A clean booking experience for Saga X Ventures: live package selection, Billplz FPX,
+              manual bank transfer, QR payment, and automatic invoice delivery through Resend.
             </p>
 
             <div className="hero-actions">
-              <a className="btn btn-primary" href="#booking">Book now</a>
-              <a className="btn btn-secondary" href="#payment">See payment options</a>
+              <a className="btn btn-primary" href="#booking">
+                Start booking
+              </a>
+              <a className="btn btn-secondary" href="#payment">
+                Review payment
+              </a>
             </div>
 
             <ul className="trust-row" aria-label="Venue highlights">
               <li>Up to 16 pax seating</li>
-              <li>50 pax max chair-only setup</li>
-              <li>Free Wi-Fi</li>
-              <li>Projector included</li>
+              <li>50 pax chair-only setup</li>
+              <li>Free Wi-Fi and projector</li>
               <li>Whiteboard + marker included</li>
+              <li>Promo-ready admin pricing</li>
             </ul>
-          </div>
+          </SpotlightSurface>
 
-          <aside className="hero-card">
+          <SpotlightSurface as="aside" className="hero-card">
             <div className="hero-card-top">
               <span className="pill">Fast booking</span>
-              <span className="pill pill-muted">Manual review ready</span>
+              <span className="pill pill-muted">Invoice ready</span>
+            </div>
+
+            <div className="hero-visual-media">
+              <img src="/assets/hall-1.png" alt="Saga X hall with tables and chairs" />
+              <div className="hero-visual-overlay">
+                <span className="hero-visual-title">Live room preview</span>
+                <div className="hero-visual-stats">
+                  <div>
+                    <strong>16 pax</strong>
+                    <span>Table seating</span>
+                  </div>
+                  <div>
+                    <strong>50 pax</strong>
+                    <span>Chair-only max</span>
+                  </div>
+                  <div>
+                    <strong>3 packages</strong>
+                    <span>Instant booking</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="hero-stat">
-              <strong>3</strong>
-              <span>packages ready for instant booking</span>
+              <strong>{active.price}</strong>
+              <span>{active.title}</span>
             </div>
 
             <div className="hero-panel">
-              <p className="panel-label">Today&apos;s recommendation</p>
-              <h2 id="selected-package-title">{active.title}</h2>
-              <p id="selected-package-copy">{active.copy}</p>
-              <div className="price-chip" id="selected-package-price">{active.price}</div>
+              <p className="panel-label">Featured package</p>
+              <h2>{active.title}</h2>
+              <p>{active.copy}</p>
+              <div className="price-chip">{active.price}</div>
 
               <div className="feature-grid">
                 <div>Wi-Fi</div>
                 <div>Projector</div>
                 <div>Whiteboard</div>
-                <div>Air-cond</div>
+                <div>Air-conditioned</div>
               </div>
             </div>
-          </aside>
+          </SpotlightSurface>
         </section>
 
         <section id="pricing" className="section">
           <div className="section-heading">
             <p className="eyebrow">Packages</p>
-            <h2>Simple pricing that is easy to understand.</h2>
+            <h2>Clear package pricing with promo overrides when you need them.</h2>
             <p>
-              The hall is priced for fast decisions: hourly, half-day, and full-day.
-              No complicated matrix, no hidden package maze.
+              Keep the default price list for quick decisions, then switch on a promo rate from the
+              admin area whenever you want to run a special offer.
             </p>
           </div>
 
@@ -261,20 +346,23 @@ export default function Home() {
             {(["hour", "four", "full"] as const).map((key) => {
               const data = packages[key];
               return (
-                <button
+                <SpotlightSurface
+                  as="button"
+                  key={key}
                   className={`package-card ${selectedPackage === key ? "is-active" : ""}`}
                   type="button"
-                  key={key}
                   onClick={() => {
                     setSelectedPackage(key);
-                    document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    document.getElementById("booking")?.scrollIntoView({ behavior: "smooth", block: "start" });
                   }}
                 >
                   <span className="package-name">{data.title}</span>
                   <span className="package-price">{data.price}</span>
-                  <span className="package-meta">{data.promoLabel || (key === "hour" ? "Hourly" : key === "four" ? "Half Day" : "Full Day")}</span>
+                  <span className="package-meta">
+                    {data.promoLabel || (key === "hour" ? "Hourly" : key === "four" ? "Half-day" : "Full-day")}
+                  </span>
                   <span className="package-desc">{data.copy}</span>
-                </button>
+                </SpotlightSurface>
               );
             })}
           </div>
@@ -283,44 +371,44 @@ export default function Home() {
         <section id="gallery" className="section split-section">
           <div className="section-heading">
             <p className="eyebrow">Venue details</p>
-            <h2>Designed for comfortable, productive group sessions.</h2>
+            <h2>Designed for productive sessions with a calm, office-like feel.</h2>
             <p>
-              The space feels like a clean office-classroom hybrid: tables, chairs, projector,
-              whiteboard, air-conditioning, and a layout that works for group learning or meetings.
+              The hall works for workshops, small seminars, classes, and team meetings. It stays
+              practical, neat, and comfortable so your event feels organized from the start.
             </p>
 
             <ul className="bullet-list">
-              <li>Up to 16 pax with table seating</li>
-              <li>Up to 50 pax in chair-only layout</li>
-              <li>Free Wi-Fi and projector</li>
-              <li>Whiteboard and marker ready</li>
-              <li>Suitable for office meetings, seminars, and classes</li>
+              <li>Table seating for up to 16 people</li>
+              <li>Chair-only layout for up to 50 people</li>
+              <li>Projector, whiteboard, marker, and Wi-Fi included</li>
+              <li>Bright, minimal interior with flexible setup</li>
+              <li>Easy to pair with invoice and payment workflow</li>
             </ul>
           </div>
 
           <div className="photo-stack" aria-label="Hall photos">
-            <figure className="photo-card photo-card-large">
+            <SpotlightSurface as="figure" className="photo-card photo-card-large">
               <img src="/assets/hall-1.png" alt="Saga X hall setup with tables and chairs" />
               <figcaption>
                 <span>Hall image 01</span>
                 <strong>Flexible room layout</strong>
               </figcaption>
-            </figure>
+            </SpotlightSurface>
             <div className="photo-row">
-              <figure className="photo-card">
+              <SpotlightSurface as="figure" className="photo-card">
                 <img src="/assets/hall-2.png" alt="Saga X hall with projector and seating" />
                 <figcaption>
                   <span>Hall image 02</span>
                   <strong>Projector setup</strong>
                 </figcaption>
-              </figure>
-              <figure className="photo-card">
+              </SpotlightSurface>
+              <SpotlightSurface as="figure" className="photo-card">
                 <img src="/assets/hall-3.png" alt="Saga X hall classroom arrangement" />
                 <figcaption>
                   <span>Hall image 03</span>
                   <strong>Meeting tables</strong>
                 </figcaption>
-              </figure>
+              </SpotlightSurface>
             </div>
           </div>
         </section>
@@ -328,44 +416,48 @@ export default function Home() {
         <section id="payment" className="section payment-section">
           <div className="section-heading">
             <p className="eyebrow">Payment</p>
-            <h2>Use Billplz FPX or keep it manual with bank transfer and QR.</h2>
+            <h2>Support Billplz FPX, manual transfer, and QR payment in one flow.</h2>
             <p>
-              The booking flow supports both auto payment and manual verification. That means you
-              can launch fast now, then tighten automation later if needed.
+              Customers can pay immediately through Billplz, transfer manually to your bank
+              account, or scan the QR image you provided for faster checkout.
             </p>
           </div>
 
           <div className="payment-grid">
-            <article className="payment-card">
+            <SpotlightSurface as="article" className="payment-card">
               <h3>Billplz FPX</h3>
-              <p>Best for instant online payment and automatic confirmation.</p>
+              <p>Best for instant payment and automatic confirmation.</p>
               <ul>
                 <li>Billplz checkout</li>
                 <li>Callback verification</li>
                 <li>Auto invoice update</li>
               </ul>
-            </article>
+            </SpotlightSurface>
 
-            <article className="payment-card">
+            <SpotlightSurface as="article" className="payment-card">
               <h3>Manual transfer</h3>
               <p>Customers can bank transfer directly to Saga X Ventures.</p>
               <ul>
-                <li>Hong Leong Bank</li>
-                <li>Account: 3440 1065 516</li>
-                <li>Proof upload supported</li>
+                <li>{publicConfig?.bank_name || "Hong Leong Bank"}</li>
+                <li>Account: {publicConfig?.bank_account_number || "3440 1065 516"}</li>
+                <li>Account holder: {publicConfig?.bank_account_name || "SAGA X VENTURES"}</li>
               </ul>
-            </article>
+            </SpotlightSurface>
 
-            <article className="payment-card">
+            <SpotlightSurface as="article" className="payment-card">
               <h3>QR payment</h3>
               <p>Show a QR image for quick scan-and-pay on mobile.</p>
-              <img className="qr-image" src="/assets/payment-qr.png" alt="Saga X Ventures QR payment code" />
+              <img
+                className="qr-image"
+                src={publicConfig?.payment_qr_url || "/assets/payment-qr.png"}
+                alt="Saga X Ventures QR payment code"
+              />
               <ul>
                 <li>QR image ready</li>
                 <li>Resend invoice after booking</li>
-                <li>WhatsApp alert to 60137732703</li>
+                <li>WhatsApp alert to {publicConfig?.whatsapp || "60137732703"}</li>
               </ul>
-            </article>
+            </SpotlightSurface>
           </div>
         </section>
 
@@ -374,13 +466,13 @@ export default function Home() {
             <p className="eyebrow">Booking</p>
             <h2>One screen to capture the booking, invoice, and payment intent.</h2>
             <p>
-              This is the first-pass booking form. It is intentionally short so the customer can
-              reserve the slot without friction.
+              The flow stays short on purpose so your customer can reserve the slot quickly without
+              a long checkout process.
             </p>
           </div>
 
           <div className="booking-grid">
-            <form className="booking-form" onSubmit={handleSubmit}>
+            <SpotlightSurface as="form" className="booking-form" onSubmit={handleSubmit}>
               <div className="form-row">
                 <label>
                   Full name
@@ -416,9 +508,15 @@ export default function Home() {
                     value={selectedPackage}
                     onChange={(event) => setSelectedPackage(event.target.value)}
                   >
-                    <option value="hour">{packages.hour.title} - {packages.hour.price}</option>
-                    <option value="four">{packages.four.title} - {packages.four.price}</option>
-                    <option value="full">{packages.full.title} - {packages.full.price}</option>
+                    <option value="hour">
+                      {packages.hour.title} - {packages.hour.price}
+                    </option>
+                    <option value="four">
+                      {packages.four.title} - {packages.four.price}
+                    </option>
+                    <option value="full">
+                      {packages.full.title} - {packages.full.price}
+                    </option>
                   </select>
                 </label>
               </div>
@@ -463,27 +561,49 @@ export default function Home() {
               <div className="booking-result" id="booking-result" aria-live="polite">
                 {bookingResult}
               </div>
-            </form>
+            </SpotlightSurface>
 
-            <aside className="summary-card">
+            <SpotlightSurface as="aside" className="summary-card">
               <p className="eyebrow">Current selection</p>
               <h3 id="summary-name">{packages[selectedPackage]?.title || "Hall 4 Hour"}</h3>
-              <div className="summary-price" id="summary-price">{packages[selectedPackage]?.price || formatMyr(18000)}</div>
+              <div className="summary-price" id="summary-price">
+                {packages[selectedPackage]?.price || formatMyr(18000)}
+              </div>
               <p id="summary-copy">{packages[selectedPackage]?.copy}</p>
 
               <div className="summary-list">
-                <div><span>Company</span><strong>Saga X Ventures</strong></div>
-                <div><span>Bank</span><strong>{publicConfig?.bank_name || "Hong Leong Bank"}</strong></div>
-                <div><span>Account</span><strong>{publicConfig?.bank_account_number || "3440 1065 516"}</strong></div>
-                <div><span>WhatsApp</span><strong>{publicConfig?.whatsapp || "60137732703"}</strong></div>
+                <div>
+                  <span>Company</span>
+                  <strong>{publicConfig?.company_name || "Saga X Ventures"}</strong>
+                </div>
+                <div>
+                  <span>Bank</span>
+                  <strong>{publicConfig?.bank_name || "Hong Leong Bank"}</strong>
+                </div>
+                <div>
+                  <span>Account</span>
+                  <strong>{publicConfig?.bank_account_number || "3440 1065 516"}</strong>
+                </div>
+                <div>
+                  <span>Account holder</span>
+                  <strong>{publicConfig?.bank_account_name || "SAGA X VENTURES"}</strong>
+                </div>
+                <div>
+                  <span>WhatsApp</span>
+                  <strong>{publicConfig?.whatsapp || "60137732703"}</strong>
+                </div>
               </div>
 
               <div className="qr-placeholder">
-                <img className="qr-image" src={publicConfig?.payment_qr_url || "/assets/payment-qr.png"} alt="Saga X Ventures QR payment code" />
+                <img
+                  className="qr-image"
+                  src={publicConfig?.payment_qr_url || "/assets/payment-qr.png"}
+                  alt="Saga X Ventures QR payment code"
+                />
                 <span>QR image ready</span>
                 <strong>Scan to pay quickly from mobile</strong>
               </div>
-            </aside>
+            </SpotlightSurface>
           </div>
         </section>
 
@@ -494,18 +614,18 @@ export default function Home() {
           </div>
 
           <div className="faq-grid">
-            <article className="faq-card">
+            <SpotlightSurface as="article" className="faq-card">
               <h3>Is projector included?</h3>
               <p>Yes, projector is included with the hall packages.</p>
-            </article>
-            <article className="faq-card">
+            </SpotlightSurface>
+            <SpotlightSurface as="article" className="faq-card">
               <h3>Can I pay manually?</h3>
               <p>Yes, bank transfer and QR payment are both supported.</p>
-            </article>
-            <article className="faq-card">
+            </SpotlightSurface>
+            <SpotlightSurface as="article" className="faq-card">
               <h3>Will I receive an invoice?</h3>
               <p>Yes, invoice emails can be sent through Resend after confirmation.</p>
-            </article>
+            </SpotlightSurface>
           </div>
         </section>
       </main>
@@ -516,7 +636,9 @@ export default function Home() {
           <p>space.sagaxventures.com</p>
         </div>
         <div className="footer-links">
-          <a href="https://wa.me/60137732703" target="_blank" rel="noreferrer">WhatsApp</a>
+          <a href="https://wa.me/60137732703" target="_blank" rel="noreferrer">
+            WhatsApp
+          </a>
           <a href="mailto:hello@sagaxventures.com">Email</a>
         </div>
       </footer>
