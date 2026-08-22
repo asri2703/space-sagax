@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useEffect, useState, type ReactNode } from "react";
+import { type FormEvent, type ReactNode, useEffect, useState } from "react";
 import { SpotlightSurface } from "@/components/spotlight-surface";
 
 type PackageState = {
@@ -8,8 +8,8 @@ type PackageState = {
   price: string;
   amountCents: number;
   copy: string;
-  promoLabel?: string;
-  isPromo?: boolean;
+  isActive?: boolean;
+  shortLabel: string;
 };
 
 type PublicConfig = {
@@ -38,27 +38,127 @@ type PublicConfig = {
 
 const defaultPackages: Record<string, PackageState> = {
   hour: {
-    title: "Hall 1 Hour",
+    title: "1 Hour",
     price: "RM60.00",
     amountCents: 6000,
-    copy: "Best for short meetings and quick sessions.",
+    copy: "Great for quick meetings and short sessions.",
+    shortLabel: "Quick session",
   },
   four: {
-    title: "Hall 4 Hour",
+    title: "4 Hours",
     price: "RM180.00",
     amountCents: 18000,
-    copy: "Ideal for workshops, training, and half-day use.",
+    copy: "Ideal for classes, workshops and training.",
+    shortLabel: "Half-day",
   },
   full: {
-    title: "Hall Full Day",
+    title: "Full Day",
     price: "RM300.00",
     amountCents: 30000,
-    copy: "Best for seminars and all-day programs.",
+    copy: "Best for seminars, launches and events.",
+    shortLabel: "All day",
   },
 };
 
+const heroHighlights = [
+  "Up to 50 Pax",
+  "Projector Included",
+  "Free Wi-Fi",
+  "Air-Conditioned",
+];
+
+const venueFeatures = [
+  "Up to 16 pax with tables",
+  "Up to 50 pax chair-only",
+  "Projector included",
+  "Whiteboard & marker",
+  "Free Wi-Fi",
+  "Air-conditioned",
+];
+
+const paymentCards = [
+  {
+    title: "Online Banking",
+    copy: "Fast online payment for confirmed bookings.",
+  },
+  {
+    title: "Bank Transfer",
+    copy: "Manual transfer details appear after booking.",
+  },
+  {
+    title: "QR Payment",
+    copy: "Scan the QR when you choose QR payment.",
+  },
+];
+
+const faqItems = [
+  {
+    question: "Is projector included?",
+    answer: "Yes, projector is included.",
+  },
+  {
+    question: "How many people can the hall accommodate?",
+    answer: "Up to 16 pax with tables or 50 pax for chair-only setup.",
+  },
+  {
+    question: "Can I pay by bank transfer?",
+    answer: "Yes, bank transfer and QR payment are available.",
+  },
+  {
+    question: "Will I receive a booking confirmation?",
+    answer: "Yes, confirmation and invoice will be sent after your booking is confirmed.",
+  },
+];
+
 function formatMyr(amountCents = 0) {
   return `RM${(Number(amountCents || 0) / 100).toFixed(2)}`;
+}
+
+function scrollToBooking() {
+  document.getElementById("booking")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function BookingInstruction({
+  paymentMethod,
+  publicConfig,
+}: {
+  paymentMethod: string;
+  publicConfig: PublicConfig | null;
+}) {
+  const qrUrl = publicConfig?.payment_qr_url || "/assets/payment-qr.png";
+
+  if (paymentMethod === "manual") {
+    return (
+      <div className="booking-note is-revealed">
+        <p className="booking-note-title">Manual transfer details</p>
+        <strong>{publicConfig?.bank_name || "Hong Leong Bank"}</strong>
+        <span>{publicConfig?.bank_account_name || "Saga X Ventures"}</span>
+        <span>{publicConfig?.bank_account_number || "3440 1065 516"}</span>
+        <img src={qrUrl} alt="QR payment for Saga X Ventures" className="booking-note-qr" />
+        <p>Send the transfer slip after your booking request if needed.</p>
+      </div>
+    );
+  }
+
+  if (paymentMethod === "qr") {
+    return (
+      <div className="booking-note is-revealed">
+        <p className="booking-note-title">QR payment</p>
+        <img src={qrUrl} alt="QR payment for Saga X Ventures" className="booking-note-qr" />
+        <p>Scan the QR after you submit the booking request.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="booking-note">
+      <p className="booking-note-title">Online banking</p>
+      <p>
+        Submit your booking request first. We will send the payment step and confirmation by
+        email.
+      </p>
+    </div>
+  );
 }
 
 export default function Home() {
@@ -66,58 +166,48 @@ export default function Home() {
   const [selectedPackage, setSelectedPackage] = useState("four");
   const [paymentMethod, setPaymentMethod] = useState("billplz");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [bookingResult, setBookingResult] = useState<ReactNode>(
-    "Choose a package, fill in the form, and we will prepare the invoice."
+    "Choose a package, complete the form and send your booking request."
   );
   const [publicConfig, setPublicConfig] = useState<PublicConfig | null>(null);
 
   useEffect(() => {
-    const syncScroll = () => {
-      const shift = Math.min(window.scrollY * 0.12, 64);
-      document.documentElement.style.setProperty("--scroll-shift", `${shift}px`);
-    };
-
-    syncScroll();
-    window.addEventListener("scroll", syncScroll, { passive: true });
-    return () => window.removeEventListener("scroll", syncScroll);
-  }, []);
-
-  useEffect(() => {
     let mounted = true;
+
     fetch("/api/public-config")
       .then((response) => (response.ok ? response.json() : null))
       .then((config: PublicConfig | null) => {
         if (!mounted || !config?.packages) return;
 
-        const nextPackages: Record<string, PackageState> = {
+        setPackages({
           hour: {
             ...defaultPackages.hour,
-            title: config.packages.hour.title,
             price: config.packages.hour.human_price,
             copy: config.packages.hour.copy,
-            promoLabel: config.packages.hour.promo_label,
-            isPromo: config.packages.hour.is_promo,
+            shortLabel: config.packages.hour.is_promo
+              ? config.packages.hour.promo_label || defaultPackages.hour.shortLabel
+              : defaultPackages.hour.shortLabel,
+            isActive: config.packages.hour.is_promo,
           },
           four: {
             ...defaultPackages.four,
-            title: config.packages.four.title,
             price: config.packages.four.human_price,
             copy: config.packages.four.copy,
-            promoLabel: config.packages.four.promo_label,
-            isPromo: config.packages.four.is_promo,
+            shortLabel: config.packages.four.is_promo
+              ? config.packages.four.promo_label || defaultPackages.four.shortLabel
+              : defaultPackages.four.shortLabel,
+            isActive: config.packages.four.is_promo,
           },
           full: {
             ...defaultPackages.full,
-            title: config.packages.full.title,
             price: config.packages.full.human_price,
             copy: config.packages.full.copy,
-            promoLabel: config.packages.full.promo_label,
-            isPromo: config.packages.full.is_promo,
+            shortLabel: config.packages.full.is_promo
+              ? config.packages.full.promo_label || defaultPackages.full.shortLabel
+              : defaultPackages.full.shortLabel,
+            isActive: config.packages.full.is_promo,
           },
-        };
-
-        setPackages(nextPackages);
+        });
         setPublicConfig(config);
       })
       .catch(() => undefined);
@@ -127,7 +217,13 @@ export default function Home() {
     };
   }, []);
 
-  const active = packages[selectedPackage] || packages.four;
+  const activePackage = packages[selectedPackage] || packages.four;
+  const selectedPaymentLabel =
+    paymentMethod === "billplz"
+      ? "Online Banking"
+      : paymentMethod === "manual"
+        ? "Bank Transfer"
+        : "QR Payment";
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -152,494 +248,356 @@ export default function Home() {
 
       const booking = data.booking || {};
       const nextPaymentUrl = data.payment_url || data.billplz?.paymentUrl || "";
-      const emailStatus = data.email?.skipped
-        ? "Email is waiting for your Resend API key."
-        : "Invoice email sent.";
+      const paymentType = String(payload.payment_method || paymentMethod || "billplz");
+      const qrUrl = publicConfig?.payment_qr_url || "/assets/payment-qr.png";
 
       setBookingResult(
-        <>
+        <div className="booking-success">
           <strong>{booking.reference || "Booking created"}</strong>
-          <br />
-          Status: {booking.status || "pending"}
-          <br />
-          {String(payload.payment_method || "Payment")} selected.
-          <br />
-          {emailStatus}
-          <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 12 }}>
-            {nextPaymentUrl ? (
-              <a className="btn btn-primary" href={nextPaymentUrl} target="_blank" rel="noreferrer">
-                Continue to Billplz FPX
-              </a>
-            ) : null}
+          <p>
+            Your request has been submitted. We will send confirmation and invoice by email.
+          </p>
+          <div className="booking-success-meta">
+            <span>{selectedPaymentLabel}</span>
+            <span>{String(booking.status || "pending")}</span>
           </div>
-        </>
+          {paymentType === "billplz" && nextPaymentUrl ? (
+            <a className="btn btn-primary" href={nextPaymentUrl} target="_blank" rel="noreferrer">
+              Continue to Online Banking
+            </a>
+          ) : null}
+          {paymentType === "manual" ? (
+            <div className="booking-success-payment">
+              <strong>{publicConfig?.bank_name || "Hong Leong Bank"}</strong>
+              <span>{publicConfig?.bank_account_name || "Saga X Ventures"}</span>
+              <span>{publicConfig?.bank_account_number || "3440 1065 516"}</span>
+              <img src={qrUrl} alt="QR payment for Saga X Ventures" />
+            </div>
+          ) : null}
+          {paymentType === "qr" ? (
+            <div className="booking-success-payment">
+              <img src={qrUrl} alt="QR payment for Saga X Ventures" />
+              <span>Scan the QR to complete payment.</span>
+            </div>
+          ) : null}
+        </div>
       );
     } catch (error) {
       setBookingResult(
-        <>
+        <div className="booking-success is-error">
           <strong>Booking could not be created.</strong>
-          <br />
-          {error instanceof Error ? error.message : "Please check the form and try again."}
-        </>
+          <p>{error instanceof Error ? error.message : "Please check the form and try again."}</p>
+        </div>
       );
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  return (
-    <div className={`page-shell ${isMenuOpen ? "menu-open" : ""}`}>
-      <div className="page-ambient" aria-hidden="true" />
+  function handlePackageSelect(key: string) {
+    setSelectedPackage(key);
+    scrollToBooking();
+  }
 
-      <header className={`topbar ${isMenuOpen ? "is-open" : ""}`}>
-        <div className="brand">
+  return (
+    <div className="site-shell">
+      <header className="site-header">
+        <div className="brand-lockup">
           <div className="brand-mark" aria-hidden="true" />
           <div>
             <strong>Saga X Ventures</strong>
-            <span>Space booking</span>
+            <span>Saga X Space, Senawang</span>
           </div>
         </div>
 
-        <nav className="topnav" aria-label="Primary">
-          <a href="#pricing" onClick={() => setIsMenuOpen(false)}>
-            Packages
-          </a>
-          <a href="#gallery" onClick={() => setIsMenuOpen(false)}>
-            Venue
-          </a>
-          <a href="#payment" onClick={() => setIsMenuOpen(false)}>
-            Payment
-          </a>
-          <a href="#booking" onClick={() => setIsMenuOpen(false)}>
-            Booking
-          </a>
-          <a href="/admin" onClick={() => setIsMenuOpen(false)}>
-            Admin
-          </a>
-        </nav>
-
-        <div className="topbar-actions">
-          <a className="btn btn-secondary" href="#booking">
-            Book now
-          </a>
+        <div className="header-actions">
           <a className="btn btn-ghost" href="https://wa.me/60137732703" target="_blank" rel="noreferrer">
             WhatsApp
           </a>
-          <button
-            type="button"
-            className="menu-button"
-            aria-expanded={isMenuOpen}
-            aria-controls="mobile-nav-panel"
-            aria-label="Toggle navigation menu"
-            onClick={() => setIsMenuOpen((current) => !current)}
-          >
-            <span aria-hidden="true" />
-          </button>
-        </div>
-
-        <div id="mobile-nav-panel" className="mobile-nav-panel" hidden={!isMenuOpen}>
-          <a href="#pricing" onClick={() => setIsMenuOpen(false)}>
-            Packages
-          </a>
-          <a href="#gallery" onClick={() => setIsMenuOpen(false)}>
-            Venue
-          </a>
-          <a href="#payment" onClick={() => setIsMenuOpen(false)}>
-            Payment
-          </a>
-          <a href="#booking" onClick={() => setIsMenuOpen(false)}>
-            Booking
-          </a>
-          <a href="/admin" onClick={() => setIsMenuOpen(false)}>
-            Admin
+          <a className="btn btn-primary" href="#booking">
+            Book Now
           </a>
         </div>
       </header>
 
-      <main>
-        <section className="hero">
-          <SpotlightSurface as="section" className="hero-copy">
+      <main className="site-main">
+        <section className="hero-section">
+          <SpotlightSurface as="div" className="hero-copy">
             <p className="eyebrow">Saga X Space, Senawang</p>
-            <h1>Book the hall with a clean, compact checkout flow.</h1>
-            <p className="lede">
-              Choose a package, pay by Billplz, transfer, or QR, and get the invoice without a bulky
-              checkout flow.
+            <h1>Book Your Space. Simple & Easy.</h1>
+            <p className="hero-lede">
+              Comfortable space for meetings, classes, workshops and small events in Senawang.
             </p>
 
-            <div className="hero-actions">
+            <div className="hero-cta">
               <a className="btn btn-primary" href="#booking">
-                Start booking
+                Book Now
               </a>
-              <a className="btn btn-secondary" href="#payment">
-                Review payment
+              <a className="btn btn-secondary" href="#pricing">
+                View Pricing
               </a>
             </div>
 
-            <ul className="trust-row" aria-label="Venue highlights">
-              <li>Up to 16 pax seating</li>
-              <li>50 pax chair-only setup</li>
-              <li>Free Wi-Fi and projector</li>
-              <li>Whiteboard + marker included</li>
-              <li>Promo pricing in admin</li>
+            <ul className="highlight-row" aria-label="Venue highlights">
+              {heroHighlights.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
             </ul>
           </SpotlightSurface>
 
-          <SpotlightSurface as="aside" className="hero-card">
-            <div className="hero-card-top">
-              <span className="pill">Fast booking</span>
-              <span className="pill pill-muted">Invoice ready</span>
-            </div>
-
-            <div className="hero-visual-media">
-              <img src="/assets/hall-1.png" alt="Saga X hall with tables and chairs" />
-              <div className="hero-visual-overlay">
-                <span className="hero-visual-title">Live room preview</span>
-                <div className="hero-visual-stats">
-                  <div>
-                    <strong>16 pax</strong>
-                    <span>Table seating</span>
-                  </div>
-                  <div>
-                    <strong>50 pax</strong>
-                    <span>Chair-only max</span>
-                  </div>
-                  <div>
-                    <strong>3 packages</strong>
-                    <span>Instant booking</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="hero-stat">
-              <strong>{active.price}</strong>
-              <span>{active.title}</span>
-            </div>
-
-            <div className="hero-panel">
-              <p className="panel-label">Featured package</p>
-              <h2>{active.title}</h2>
-              <p>{active.copy}</p>
-              <div className="price-chip">{active.price}</div>
-
-              <div className="feature-grid">
-                <div>Wi-Fi</div>
-                <div>Projector</div>
-                <div>Whiteboard</div>
-                <div>Air-conditioned</div>
-              </div>
-            </div>
+          <SpotlightSurface as="figure" className="hero-visual">
+            <img src="/assets/hall-1.png" alt="Saga X hall interior with tables and projector" />
+            <figcaption>
+              <span>Airy hall setup</span>
+              <strong>Ready for meetings, classes and workshops</strong>
+            </figcaption>
           </SpotlightSurface>
         </section>
 
-        <section id="pricing" className="section">
+        <section id="pricing" className="content-section">
           <div className="section-heading">
-            <p className="eyebrow">Packages</p>
-            <h2>Default pricing, promo overrides when needed.</h2>
-            <p>
-              Keep the default price list for quick decisions, then turn on a promo rate from the
-              admin area whenever you run a special offer.
-            </p>
+            <p className="eyebrow">Pricing</p>
+            <h2>Simple, Transparent Pricing</h2>
           </div>
 
-          <div className="package-grid">
-            {(["hour", "four", "full"] as const).map((key) => {
+          <div className="pricing-grid">
+            {( ["hour", "four", "full"] as const).map((key) => {
               const data = packages[key];
               return (
                 <SpotlightSurface
-                  as="button"
+                  as="article"
                   key={key}
-                  className={`package-card ${selectedPackage === key ? "is-active" : ""}`}
-                  type="button"
-                  onClick={() => {
-                    setSelectedPackage(key);
-                    document.getElementById("booking")?.scrollIntoView({ behavior: "smooth", block: "start" });
-                  }}
+                  className={`pricing-card ${selectedPackage === key ? "is-selected" : ""}`}
                 >
-                  <span className="package-name">{data.title}</span>
-                  <span className="package-price">{data.price}</span>
-                  <span className="package-meta">
-                    {data.promoLabel || (key === "hour" ? "Hourly" : key === "four" ? "Half-day" : "Full-day")}
-                  </span>
-                  <span className="package-desc">{data.copy}</span>
+                  <div className="pricing-card-top">
+                    <div>
+                      <h3>{data.title}</h3>
+                      <p>{data.shortLabel}</p>
+                    </div>
+                    <strong>{data.price}</strong>
+                  </div>
+                  <p className="pricing-copy">{data.copy}</p>
+                  <button
+                    type="button"
+                    className="btn btn-primary pricing-button"
+                    onClick={() => handlePackageSelect(key)}
+                  >
+                    Book Now
+                  </button>
                 </SpotlightSurface>
               );
             })}
           </div>
         </section>
 
-        <section id="gallery" className="section split-section">
-          <div className="section-heading">
-            <p className="eyebrow">Venue details</p>
-            <h2>Calm, office-like space for focused sessions.</h2>
-            <p>
-              The hall works for workshops, small seminars, classes, and team meetings while keeping
-              the setup neat and practical.
+        <section id="venue" className="content-section split-layout">
+          <div className="section-copy">
+            <p className="eyebrow">Venue</p>
+            <h2>A Simple Space for Your Next Session</h2>
+            <p className="section-lede">
+              Perfect for meetings, training, classes, workshops and small seminars.
             </p>
 
-            <ul className="bullet-list">
-              <li>Table seating for up to 16 people</li>
-              <li>Chair-only layout for up to 50 people</li>
-              <li>Projector, whiteboard, marker, and Wi-Fi included</li>
-              <li>Bright, minimal interior with flexible setup</li>
-              <li>Easy to pair with invoice and payment workflow</li>
-            </ul>
+            <div className="feature-list" aria-label="Venue features">
+              {venueFeatures.map((item) => (
+                <div key={item} className="feature-item">
+                  <span aria-hidden="true" />
+                  <p>{item}</p>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="photo-stack" aria-label="Hall photos">
-            <SpotlightSurface as="figure" className="photo-card photo-card-large">
-              <img src="/assets/hall-1.png" alt="Saga X hall setup with tables and chairs" />
-              <figcaption>
-                <span>Hall image 01</span>
-                <strong>Flexible room layout</strong>
-              </figcaption>
+          <SpotlightSurface as="figure" className="venue-image-card">
+            <img src="/assets/hall-2.png" alt="Saga X hall with projector and seating arrangement" />
+            <figcaption>
+              <span>Flexible setup</span>
+              <strong>Tables, chairs and projector included</strong>
+            </figcaption>
+          </SpotlightSurface>
+        </section>
+
+        <section id="gallery" className="content-section">
+          <div className="section-heading">
+            <p className="eyebrow">Gallery</p>
+            <h2>Take a Look Inside</h2>
+          </div>
+
+          <div className="gallery-grid">
+            <SpotlightSurface as="figure" className="gallery-card gallery-card-large">
+              <img src="/assets/hall-1.png" alt="Saga X hall with tables" />
             </SpotlightSurface>
-            <div className="photo-row">
-              <SpotlightSurface as="figure" className="photo-card">
-                <img src="/assets/hall-2.png" alt="Saga X hall with projector and seating" />
-                <figcaption>
-                  <span>Hall image 02</span>
-                  <strong>Projector setup</strong>
-                </figcaption>
-              </SpotlightSurface>
-              <SpotlightSurface as="figure" className="photo-card">
-                <img src="/assets/hall-3.png" alt="Saga X hall classroom arrangement" />
-                <figcaption>
-                  <span>Hall image 03</span>
-                  <strong>Meeting tables</strong>
-                </figcaption>
-              </SpotlightSurface>
-            </div>
+            <SpotlightSurface as="figure" className="gallery-card">
+              <img src="/assets/hall-2.png" alt="Saga X hall with projector screen" />
+            </SpotlightSurface>
+            <SpotlightSurface as="figure" className="gallery-card">
+              <img src="/assets/hall-3.png" alt="Saga X hall seating layout" />
+            </SpotlightSurface>
+            <SpotlightSurface as="figure" className="gallery-card">
+              <img src="/assets/hall-4.png" alt="Saga X hall interior" />
+            </SpotlightSurface>
           </div>
         </section>
 
-        <section id="payment" className="section payment-section">
+        <section id="payment" className="content-section">
           <div className="section-heading">
             <p className="eyebrow">Payment</p>
-            <h2>Billplz, transfer, or QR payment.</h2>
-            <p>
-              Customers can pay instantly through Billplz, transfer manually to your bank account, or
-              scan the QR image for a faster checkout.
+            <h2>Easy Payment Options</h2>
+            <p className="section-lede">
+              Pay securely via online banking, bank transfer or QR payment.
             </p>
           </div>
 
           <div className="payment-grid">
-            <SpotlightSurface as="article" className="payment-card">
-              <h3>Billplz FPX</h3>
-              <p>Best for fast payment and automatic confirmation.</p>
-              <ul>
-                <li>Billplz checkout</li>
-                <li>Callback verification</li>
-                <li>Auto invoice update</li>
-              </ul>
-            </SpotlightSurface>
-
-            <SpotlightSurface as="article" className="payment-card">
-              <h3>Manual transfer</h3>
-              <p>Bank transfer directly to Saga X Ventures.</p>
-              <ul>
-                <li>{publicConfig?.bank_name || "Hong Leong Bank"}</li>
-                <li>Account: {publicConfig?.bank_account_number || "3440 1065 516"}</li>
-                <li>Account holder: {publicConfig?.bank_account_name || "SAGA X VENTURES"}</li>
-              </ul>
-            </SpotlightSurface>
-
-            <SpotlightSurface as="article" className="payment-card">
-              <h3>QR payment</h3>
-              <p>Scan the QR image on mobile for a quick pay flow.</p>
-              <img
-                className="qr-image"
-                src={publicConfig?.payment_qr_url || "/assets/payment-qr.png"}
-                alt="Saga X Ventures QR payment code"
-              />
-              <ul>
-                <li>QR image ready</li>
-                <li>Resend invoice after booking</li>
-                <li>WhatsApp alert to {publicConfig?.whatsapp || "60137732703"}</li>
-              </ul>
-            </SpotlightSurface>
+            {paymentCards.map((item) => (
+              <SpotlightSurface as="article" key={item.title} className="payment-card">
+                <h3>{item.title}</h3>
+                <p>{item.copy}</p>
+              </SpotlightSurface>
+            ))}
           </div>
+
+          <p className="payment-note">
+            Payment details are shown after you submit your booking request or when you select
+            manual payment.
+          </p>
         </section>
 
-        <section id="booking" className="section booking-section">
+        <section id="booking" className="content-section booking-layout">
           <div className="section-heading">
             <p className="eyebrow">Booking</p>
-            <h2>Booking, invoice, and payment in one place.</h2>
-            <p>
-              The flow stays short so your customer can reserve the slot quickly without a long
-              checkout process.
+            <h2>Book Your Space</h2>
+            <p className="section-lede">
+              Select your date, choose your package and submit your booking request.
             </p>
           </div>
 
           <div className="booking-grid">
             <SpotlightSurface as="form" className="booking-form" onSubmit={handleSubmit}>
-              <div className="form-row">
+              <div className="form-grid">
                 <label>
-                  Full name
+                  Full Name
                   <input type="text" name="name" placeholder="Your name" required />
+                </label>
+                <label>
+                  WhatsApp Number
+                  <input type="tel" name="whatsapp" placeholder="6012 345 6789" />
                 </label>
                 <label>
                   Email
                   <input type="email" name="email" placeholder="you@example.com" required />
                 </label>
-              </div>
-
-              <div className="form-row">
                 <label>
-                  WhatsApp number
-                  <input type="tel" name="whatsapp" placeholder="6012 345 6789" />
-                </label>
-                <label>
-                  Event date
+                  Event Date
                   <input type="date" name="event_date" required />
                 </label>
-              </div>
-
-              <div className="form-row">
                 <label>
-                  Start time
+                  Start Time
                   <input type="time" name="start_time" required />
                 </label>
                 <label>
                   Package
                   <select
                     name="package"
-                    id="package-select"
                     value={selectedPackage}
                     onChange={(event) => setSelectedPackage(event.target.value)}
                   >
-                    <option value="hour">
-                      {packages.hour.title} - {packages.hour.price}
-                    </option>
-                    <option value="four">
-                      {packages.four.title} - {packages.four.price}
-                    </option>
-                    <option value="full">
-                      {packages.full.title} - {packages.full.price}
-                    </option>
-                  </select>
-                </label>
-              </div>
-
-              <div className="form-row">
-                <label>
-                  Payment method
-                  <select
-                    name="payment_method"
-                    id="payment-method-select"
-                    value={paymentMethod}
-                    onChange={(event) => setPaymentMethod(event.target.value)}
-                  >
-                    <option value="billplz">Billplz FPX</option>
-                    <option value="manual">Manual transfer</option>
-                    <option value="qr">QR payment</option>
+                    <option value="hour">{packages.hour.title} - {packages.hour.price}</option>
+                    <option value="four">{packages.four.title} - {packages.four.price}</option>
+                    <option value="full">{packages.full.title} - {packages.full.price}</option>
                   </select>
                 </label>
                 <label>
-                  Pax estimate
+                  Pax
                   <input type="number" name="pax" min="1" placeholder="16" />
                 </label>
+                <label>
+                  Event Type
+                  <input type="text" name="event_type" placeholder="Meeting, class, workshop" />
+                </label>
               </div>
-
-              <label>
-                Event type
-                <input type="text" name="event_type" placeholder="Meeting, class, seminar, workshop" />
-              </label>
 
               <label>
                 Notes
-                <textarea name="notes" rows={4} placeholder="Setup requests, add-ons, or special instructions" />
+                <textarea
+                  name="notes"
+                  rows={4}
+                  placeholder="Setup requests, timing notes or anything important"
+                />
+              </label>
+
+              <label>
+                Payment Method
+                <select
+                  name="payment_method"
+                  value={paymentMethod}
+                  onChange={(event) => setPaymentMethod(event.target.value)}
+                >
+                  <option value="billplz">Online Banking</option>
+                  <option value="manual">Bank Transfer</option>
+                  <option value="qr">QR Payment</option>
+                </select>
               </label>
 
               <div className="form-actions">
-                <button type="submit" className="btn btn-primary" id="booking-submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Creating booking..." : "Request booking"}
+                <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                  {isSubmitting ? "Submitting..." : "Request Booking"}
                 </button>
-                <p>Invoice will be sent by email once the booking is confirmed.</p>
+                <p>Confirmation and invoice will be sent after your booking is confirmed.</p>
               </div>
 
-              <div className="booking-result" id="booking-result" aria-live="polite">
+              <div className="booking-result" aria-live="polite">
                 {bookingResult}
               </div>
             </SpotlightSurface>
 
-            <SpotlightSurface as="aside" className="summary-card">
-              <p className="eyebrow">Current selection</p>
-              <h3 id="summary-name">{packages[selectedPackage]?.title || "Hall 4 Hour"}</h3>
-              <div className="summary-price" id="summary-price">
-                {packages[selectedPackage]?.price || formatMyr(18000)}
-              </div>
-              <p id="summary-copy">{packages[selectedPackage]?.copy}</p>
-
-              <div className="summary-list">
-                <div>
-                  <span>Company</span>
-                  <strong>{publicConfig?.company_name || "Saga X Ventures"}</strong>
-                </div>
-                <div>
-                  <span>Bank</span>
-                  <strong>{publicConfig?.bank_name || "Hong Leong Bank"}</strong>
-                </div>
-                <div>
-                  <span>Account</span>
-                  <strong>{publicConfig?.bank_account_number || "3440 1065 516"}</strong>
-                </div>
-                <div>
-                  <span>Account holder</span>
-                  <strong>{publicConfig?.bank_account_name || "SAGA X VENTURES"}</strong>
-                </div>
-                <div>
-                  <span>WhatsApp</span>
-                  <strong>{publicConfig?.whatsapp || "60137732703"}</strong>
+            <SpotlightSurface as="aside" className="booking-aside">
+              <div className="booking-summary">
+                <p className="eyebrow">Selected package</p>
+                <h3>{activePackage.title}</h3>
+                <strong>{activePackage.price}</strong>
+                <p>{activePackage.copy}</p>
+                <div className="booking-summary-meta">
+                  <span>{activePackage.shortLabel}</span>
+                  <span>{selectedPaymentLabel}</span>
                 </div>
               </div>
 
-              <div className="qr-placeholder">
-                <img
-                  className="qr-image"
-                  src={publicConfig?.payment_qr_url || "/assets/payment-qr.png"}
-                  alt="Saga X Ventures QR payment code"
-                />
-                <span>QR image ready</span>
-                <strong>Scan to pay quickly from mobile</strong>
-              </div>
+              <BookingInstruction paymentMethod={paymentMethod} publicConfig={publicConfig} />
             </SpotlightSurface>
           </div>
         </section>
 
-        <section className="section faq-section">
+        <section id="faq" className="content-section">
           <div className="section-heading">
             <p className="eyebrow">FAQ</p>
-            <h2>Quick answers.</h2>
+            <h2>Frequently Asked Questions</h2>
           </div>
 
           <div className="faq-grid">
-            <SpotlightSurface as="article" className="faq-card">
-              <h3>Is projector included?</h3>
-              <p>Yes, projector is included with the hall packages.</p>
-            </SpotlightSurface>
-            <SpotlightSurface as="article" className="faq-card">
-              <h3>Can I pay manually?</h3>
-              <p>Yes, bank transfer and QR payment are both supported.</p>
-            </SpotlightSurface>
-            <SpotlightSurface as="article" className="faq-card">
-              <h3>Will I receive an invoice?</h3>
-              <p>Yes, invoice emails can be sent through Resend after confirmation.</p>
-            </SpotlightSurface>
+            {faqItems.map((item) => (
+              <SpotlightSurface as="article" key={item.question} className="faq-card">
+                <h3>{item.question}</h3>
+                <p>{item.answer}</p>
+              </SpotlightSurface>
+            ))}
           </div>
         </section>
       </main>
 
-      <footer className="footer">
+      <footer className="site-footer">
         <div>
           <strong>Saga X Ventures</strong>
-          <p>space.sagaxventures.com</p>
+          <p>Saga X Space, Senawang</p>
         </div>
-        <div className="footer-links">
+        <div className="footer-actions">
           <a href="https://wa.me/60137732703" target="_blank" rel="noreferrer">
             WhatsApp
           </a>
           <a href="mailto:hello@sagaxventures.com">Email</a>
+          <a className="btn btn-primary" href="#booking">
+            Book Now
+          </a>
         </div>
       </footer>
     </div>

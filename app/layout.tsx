@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Saga X Space Booking",
+  title: "Saga X Space | Hall Booking in Senawang",
   description:
-    "Premium hall rental booking for Saga X Ventures with live pricing, Billplz FPX, bank transfer, QR payment, and automated invoice delivery.",
+    "Book Saga X Space in Senawang for meetings, classes, workshops and small events with simple pricing, easy booking and secure payment options.",
 };
 
 export default function RootLayout({
