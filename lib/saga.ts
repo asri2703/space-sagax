@@ -17,19 +17,19 @@ const BASE_PACKAGE_MAP = {
     title: "Hall 1 Hour",
     amountCents: 6000,
     humanPrice: "RM60.00",
-    copy: "Best for short meetings or quick sessions.",
+    copy: "Best for short meetings and quick sessions.",
   },
   four: {
     title: "Hall 4 Hour",
     amountCents: 18000,
     humanPrice: "RM180.00",
-    copy: "Best value for workshops, training, and half-day sessions.",
+    copy: "Ideal for workshops, training, and half-day use.",
   },
   full: {
     title: "Hall Full Day",
     amountCents: 30000,
     humanPrice: "RM300.00",
-    copy: "Best value for full-day events and training.",
+    copy: "Best for seminars and all-day programs.",
   },
 } as const;
 

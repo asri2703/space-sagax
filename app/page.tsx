@@ -41,19 +41,19 @@ const defaultPackages: Record<string, PackageState> = {
     title: "Hall 1 Hour",
     price: "RM60.00",
     amountCents: 6000,
-    copy: "Best for short meetings, quick sessions, and fast team catch-ups.",
+    copy: "Best for short meetings and quick sessions.",
   },
   four: {
     title: "Hall 4 Hour",
     price: "RM180.00",
     amountCents: 18000,
-    copy: "Ideal for workshops, training, and half-day sessions with proper setup time.",
+    copy: "Ideal for workshops, training, and half-day use.",
   },
   full: {
     title: "Hall Full Day",
     price: "RM300.00",
     amountCents: 30000,
-    copy: "Best value for seminars, all-day classes, and event programs.",
+    copy: "Best for seminars and all-day programs.",
   },
 };
 
@@ -262,8 +262,8 @@ export default function Home() {
             <p className="eyebrow">Saga X Space, Senawang</p>
             <h1>Book the hall with a clean, compact checkout flow.</h1>
             <p className="lede">
-              Live package selection, Billplz FPX, manual transfer, QR payment, and invoice delivery
-              through Resend in one simple booking path.
+              Choose a package, pay by Billplz, transfer, or QR, and get the invoice without a bulky
+              checkout flow.
             </p>
 
             <div className="hero-actions">
@@ -280,7 +280,7 @@ export default function Home() {
               <li>50 pax chair-only setup</li>
               <li>Free Wi-Fi and projector</li>
               <li>Whiteboard + marker included</li>
-              <li>Promo-ready admin pricing</li>
+              <li>Promo pricing in admin</li>
             </ul>
           </SpotlightSurface>
 
@@ -335,7 +335,7 @@ export default function Home() {
         <section id="pricing" className="section">
           <div className="section-heading">
             <p className="eyebrow">Packages</p>
-            <h2>Simple package pricing with promo overrides when needed.</h2>
+            <h2>Default pricing, promo overrides when needed.</h2>
             <p>
               Keep the default price list for quick decisions, then turn on a promo rate from the
               admin area whenever you run a special offer.
@@ -371,7 +371,7 @@ export default function Home() {
         <section id="gallery" className="section split-section">
           <div className="section-heading">
             <p className="eyebrow">Venue details</p>
-            <h2>Calm, office-like space for productive sessions.</h2>
+            <h2>Calm, office-like space for focused sessions.</h2>
             <p>
               The hall works for workshops, small seminars, classes, and team meetings while keeping
               the setup neat and practical.
@@ -416,17 +416,17 @@ export default function Home() {
         <section id="payment" className="section payment-section">
           <div className="section-heading">
             <p className="eyebrow">Payment</p>
-            <h2>Billplz FPX, manual transfer, and QR payment.</h2>
+            <h2>Billplz, transfer, or QR payment.</h2>
             <p>
-              Customers can pay instantly through Billplz, transfer manually to your bank account,
-              or scan the QR image for a faster checkout.
+              Customers can pay instantly through Billplz, transfer manually to your bank account, or
+              scan the QR image for a faster checkout.
             </p>
           </div>
 
           <div className="payment-grid">
             <SpotlightSurface as="article" className="payment-card">
               <h3>Billplz FPX</h3>
-              <p>Best for instant payment and automatic confirmation.</p>
+              <p>Best for fast payment and automatic confirmation.</p>
               <ul>
                 <li>Billplz checkout</li>
                 <li>Callback verification</li>
@@ -436,7 +436,7 @@ export default function Home() {
 
             <SpotlightSurface as="article" className="payment-card">
               <h3>Manual transfer</h3>
-              <p>Customers can bank transfer directly to Saga X Ventures.</p>
+              <p>Bank transfer directly to Saga X Ventures.</p>
               <ul>
                 <li>{publicConfig?.bank_name || "Hong Leong Bank"}</li>
                 <li>Account: {publicConfig?.bank_account_number || "3440 1065 516"}</li>
@@ -446,7 +446,7 @@ export default function Home() {
 
             <SpotlightSurface as="article" className="payment-card">
               <h3>QR payment</h3>
-              <p>Show a QR image for quick scan-and-pay on mobile.</p>
+              <p>Scan the QR image on mobile for a quick pay flow.</p>
               <img
                 className="qr-image"
                 src={publicConfig?.payment_qr_url || "/assets/payment-qr.png"}
@@ -464,7 +464,7 @@ export default function Home() {
         <section id="booking" className="section booking-section">
           <div className="section-heading">
             <p className="eyebrow">Booking</p>
-            <h2>Capture booking, invoice, and payment in one screen.</h2>
+            <h2>Booking, invoice, and payment in one place.</h2>
             <p>
               The flow stays short so your customer can reserve the slot quickly without a long
               checkout process.
@@ -610,7 +610,7 @@ export default function Home() {
         <section className="section faq-section">
           <div className="section-heading">
             <p className="eyebrow">FAQ</p>
-            <h2>Common questions, kept simple.</h2>
+            <h2>Quick answers.</h2>
           </div>
 
           <div className="faq-grid">
