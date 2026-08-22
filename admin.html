@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Saga X Space - Admin</title>
+  <meta name="description" content="Admin dashboard for Saga X Space bookings, promo pricing, and booking management." />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="page-shell admin-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div>
+          <strong>Saga X Ventures</strong>
+          <span>Admin control</span>
+        </div>
+      </div>
+
+      <nav class="topnav" aria-label="Admin primary">
+        <a href="#pricing">Pricing</a>
+        <a href="#bookings">Bookings</a>
+        <a href="#notifications">Notifications</a>
+      </nav>
+
+      <a class="btn btn-ghost" href="/" rel="noreferrer">Public site</a>
+    </header>
+
+    <main class="admin-main">
+      <section class="section admin-hero">
+        <div class="section-heading">
+          <p class="eyebrow">Admin dashboard</p>
+          <h1>Keep default pricing intact, then layer promo pricing when needed.</h1>
+          <p>
+            The base price list stays fixed at RM60, RM180, and RM300. When you need a special rate,
+            set a promo price here and the booking page will pick it up automatically.
+          </p>
+        </div>
+
+        <div class="admin-login" id="admin-login">
+          <label>
+            Admin access key
+            <input id="admin-key" type="password" placeholder="Enter ADMIN_ACCESS_KEY" autocomplete="current-password" />
+          </label>
+          <div class="form-actions">
+            <button id="unlock-admin" class="btn btn-primary" type="button">Unlock admin</button>
+            <p>Key is stored in session only for this browser tab.</p>
+          </div>
+        </div>
+
+        <div class="admin-status" id="admin-status" hidden></div>
+      </section>
+
+      <section id="pricing" class="section admin-panel" hidden>
+        <div class="section-heading">
+          <p class="eyebrow">Pricing control</p>
+          <h2>Set promo pricing per package.</h2>
+          <p>
+            Leave a package blank to keep the default price list. Add a promo price only when you want a special offer.
+          </p>
+        </div>
+
+        <div class="admin-price-grid" id="admin-price-grid"></div>
+      </section>
+
+      <section id="bookings" class="section admin-panel" hidden>
+        <div class="section-heading">
+          <p class="eyebrow">Bookings</p>
+          <h2>Review requests and update special cases.</h2>
+          <p>
+            You can change status, apply a one-off custom amount, add admin notes, or resend the invoice after updates.
+          </p>
+        </div>
+
+        <div class="admin-booking-layout">
+          <div class="admin-bookings-list" id="admin-bookings-list"></div>
+          <aside class="admin-detail" id="admin-booking-detail">
+            <p class="muted-copy">Select a booking to see full details.</p>
+          </aside>
+        </div>
+      </section>
+
+      <section id="notifications" class="section admin-panel" hidden>
+        <div class="section-heading">
+          <p class="eyebrow">Notifications</p>
+          <h2>WhatsApp alert shortcut ready.</h2>
+          <p>
+            The system can generate a prefilled WhatsApp alert for <strong>60137732703</strong> so you can message the booking summary fast.
+          </p>
+        </div>
+
+        <div class="notification-card">
+          <strong>Tip</strong>
+          <p>Click the WhatsApp button inside a booking to open a prefilled alert on mobile or desktop WhatsApp Web.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./admin.js"></script>
+</body>
+</html>
