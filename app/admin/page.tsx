@@ -178,12 +178,14 @@ export default function AdminPage() {
   }
 
   async function api(path: string, options: RequestInit = {}) {
+    const headers = new Headers(options.headers);
+    for (const [key, value] of Object.entries(authHeaders())) {
+      headers.set(key, value);
+    }
+
     const response = await fetch(path, {
       ...options,
-      headers: {
-        ...(options.headers || {}),
-        ...authHeaders(),
-      },
+      headers,
     });
 
     const data = await response.json().catch(() => ({}));

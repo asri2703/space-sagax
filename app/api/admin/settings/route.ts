@@ -1,9 +1,9 @@
-import { env } from "cloudflare:workers";
 import { getPublicConfig, updateAdminSettingsFromInput } from "@/lib/saga";
 import { readAdminSettings } from "@/db";
+import { getRuntimeEnvValue } from "@/lib/runtime-env";
 
 function ensureAdminKey(request: Request) {
-  const expected = String(env.ADMIN_ACCESS_KEY || "").trim();
+  const expected = getRuntimeEnvValue("ADMIN_ACCESS_KEY");
   if (!expected) {
     return Response.json({ error: "ADMIN_ACCESS_KEY is not configured in local.env" }, { status: 503 });
   }

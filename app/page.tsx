@@ -3,7 +3,6 @@
 import { FormEvent, useEffect, useState } from "react";
 
 type PackageState = {
-  key: string;
   title: string;
   price: string;
   amountCents: number;
@@ -360,7 +359,7 @@ export default function Home() {
             <article className="payment-card">
               <h3>QR payment</h3>
               <p>Show a QR image for quick scan-and-pay on mobile.</p>
-              <img className="qr-image" src="/assets/payment-qr.jpg" alt="Saga X Ventures QR payment code" />
+              <img className="qr-image" src="/assets/payment-qr.png" alt="Saga X Ventures QR payment code" />
               <ul>
                 <li>QR image ready</li>
                 <li>Resend invoice after booking</li>
@@ -480,7 +479,7 @@ export default function Home() {
               </div>
 
               <div className="qr-placeholder">
-                <img className="qr-image" src={publicConfig?.payment_qr_url || "/assets/payment-qr.jpg"} alt="Saga X Ventures QR payment code" />
+                <img className="qr-image" src={publicConfig?.payment_qr_url || "/assets/payment-qr.png"} alt="Saga X Ventures QR payment code" />
                 <span>QR image ready</span>
                 <strong>Scan to pay quickly from mobile</strong>
               </div>

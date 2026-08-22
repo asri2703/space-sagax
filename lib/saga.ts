@@ -1,5 +1,4 @@
 import { createHmac, randomBytes } from "node:crypto";
-import { env } from "cloudflare:workers";
 import {
   getBooking,
   readAdminSettings,
@@ -11,6 +10,7 @@ import {
   type AdminSettings,
   type BookingRecord,
 } from "../db";
+import { getRuntimeEnvValue } from "@/lib/runtime-env";
 
 const BASE_PACKAGE_MAP = {
   hour: {
@@ -82,7 +82,7 @@ type CreateBookingResult = {
 };
 
 function appEnv(name: string, fallback = "") {
-  return String((env as Record<string, string | undefined>)[name] || fallback).trim();
+  return getRuntimeEnvValue(name, fallback);
 }
 
 export function bookingSiteName() {
@@ -195,7 +195,7 @@ export async function getPublicConfig(): Promise<PublicConfig> {
     bank_account_name: bookingAccountName(),
     bank_account_number: bookingAccountNumber(),
     whatsapp: bookingWhatsapp(),
-    payment_qr_url: appEnv("SPACE_BOOKING_PAYMENT_QR_IMAGE") || `${appBaseUrl()}/assets/payment-qr.jpg`,
+    payment_qr_url: appEnv("SPACE_BOOKING_PAYMENT_QR_IMAGE") || `${appBaseUrl()}/assets/payment-qr.png`,
     packages,
   };
 }
@@ -230,7 +230,7 @@ export function bookingEmailHtml({
         <p style="margin:0 0 8px"><strong>Bank:</strong> ${escapeHtml(bookingBankName())}</p>
         <p style="margin:0 0 8px"><strong>Account name:</strong> ${escapeHtml(bookingAccountName())}</p>
         <p style="margin:0 0 8px"><strong>Account number:</strong> ${escapeHtml(bookingAccountNumber())}</p>
-        <p style="margin:0"><strong>QR:</strong> <a href="${escapeHtml(`${appBaseUrl()}/assets/payment-qr.jpg`)}">Open payment QR</a></p>
+        <p style="margin:0"><strong>QR:</strong> <a href="${escapeHtml(`${appBaseUrl()}/assets/payment-qr.png`)}">Open payment QR</a></p>
       </div>`;
 
   return `
@@ -279,7 +279,7 @@ export function bookingEmailText({
     lines.push(`Bank: ${bookingBankName()}`);
     lines.push(`Account name: ${bookingAccountName()}`);
     lines.push(`Account number: ${bookingAccountNumber()}`);
-    lines.push(`QR: ${appBaseUrl()}/assets/payment-qr.jpg`);
+    lines.push(`QR: ${appBaseUrl()}/assets/payment-qr.png`);
   }
   lines.push(`WhatsApp: ${bookingWhatsapp()}`);
   return lines.join("\n");
@@ -593,8 +593,9 @@ export async function patchAdminBooking(
       const baseAmount = Number(
         booking.base_amount_cents || BASE_PACKAGE_MAP[String(booking.package_key || "four") as keyof typeof BASE_PACKAGE_MAP]?.amountCents || booking.amount_cents || 0
       );
-      booking.amount_cents = Math.round(baseAmount);
-      booking.human_price = formatMyr(booking.amount_cents);
+      const nextAmount = Math.round(baseAmount);
+      booking.amount_cents = nextAmount;
+      booking.human_price = formatMyr(nextAmount);
       booking.price_label = "Default price";
       booking.price_source = "default";
     } else if (body.amount_cents !== undefined || body.amountCents !== undefined) {
@@ -602,8 +603,9 @@ export async function patchAdminBooking(
       if (!Number.isFinite(amount) || amount <= 0) {
         throw new Error("Invalid amount_cents value");
       }
-      booking.amount_cents = Math.round(amount);
-      booking.human_price = formatMyr(booking.amount_cents);
+      const nextAmount = Math.round(amount);
+      booking.amount_cents = nextAmount;
+      booking.human_price = formatMyr(nextAmount);
       booking.price_label = String(body.price_label || body.label || "Custom price").trim();
       booking.price_source = "admin_override";
     }

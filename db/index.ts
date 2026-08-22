@@ -1,10 +1,10 @@
-import { env } from "cloudflare:workers";
 import {
   BOOKINGS_INDEX_SQL,
   BOOKINGS_TABLE_SQL,
   INITIAL_SETTINGS_KEY,
   SETTINGS_SCHEMA_SQL,
 } from "./schema";
+import { getRuntimeEnv } from "@/lib/runtime-env";
 
 export type BookingRecord = Record<string, unknown> & {
   reference: string;
@@ -29,13 +29,23 @@ export type AdminPackageOverride = {
 let schemaReady: Promise<void> | null = null;
 
 function getDb() {
+  const env = getRuntimeEnv();
   if (!env.DB) {
     throw new Error(
       "Cloudflare D1 binding `DB` is unavailable. Set the `d1` field in .openai/hosting.json to `DB` or let the control plane inject the real binding values before using the database."
     );
   }
 
-  return env.DB;
+  return env.DB as {
+    batch: (statements: Array<{ run: () => Promise<unknown> }>) => Promise<unknown>;
+    prepare: (sql: string) => {
+      bind: (...values: unknown[]) => {
+        run: () => Promise<unknown>;
+        first: <T>() => Promise<T | null>;
+        all: <T>() => Promise<{ results?: T[] }>;
+      };
+    };
+  };
 }
 
 function defaultAdminSettings(): AdminSettings {
@@ -81,9 +91,9 @@ async function ensureSchema() {
     schemaReady = (async () => {
       const db = getDb();
       await db.batch([
-        db.prepare(BOOKINGS_TABLE_SQL),
-        db.prepare(BOOKINGS_INDEX_SQL),
-        db.prepare(SETTINGS_SCHEMA_SQL),
+        db.prepare(BOOKINGS_TABLE_SQL).bind(),
+        db.prepare(BOOKINGS_INDEX_SQL).bind(),
+        db.prepare(SETTINGS_SCHEMA_SQL).bind(),
       ]);
     })();
   }
@@ -96,6 +106,7 @@ export async function readBookings(): Promise<BookingRecord[]> {
   const db = getDb();
   const result = await db
     .prepare("SELECT reference, payload, created_at, updated_at FROM bookings ORDER BY created_at DESC")
+    .bind()
     .all<{ reference: string; payload: string; created_at: string; updated_at: string }>();
 
   return (result.results || []).map((row) => ({

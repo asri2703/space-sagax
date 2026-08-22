@@ -1,9 +1,9 @@
-import { env } from "cloudflare:workers";
 import { resendAdminBooking } from "@/lib/saga";
+import { getRuntimeEnvValue } from "@/lib/runtime-env";
 
 function ensureAdminKey(request: Request) {
   const key = request.headers.get("x-admin-key") || request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") || "";
-  const expected = String(env.ADMIN_ACCESS_KEY || "").trim();
+  const expected = getRuntimeEnvValue("ADMIN_ACCESS_KEY");
   if (!expected) {
     return Response.json({ error: "ADMIN_ACCESS_KEY is not configured in local.env" }, { status: 503 });
   }
@@ -15,13 +15,14 @@ function ensureAdminKey(request: Request) {
 
 export async function POST(
   request: Request,
-  { params }: { params: { reference: string } }
+  { params }: { params: Promise<{ reference: string }> }
 ) {
   const denied = ensureAdminKey(request);
   if (denied) return denied;
 
   try {
-    return Response.json(await resendAdminBooking(params.reference));
+    const { reference } = await params;
+    return Response.json(await resendAdminBooking(reference));
   } catch (error) {
     return Response.json(
       { error: error instanceof Error ? error.message : "Failed to resend invoice" },
