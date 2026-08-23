@@ -6,7 +6,6 @@ import {
   saveBooking,
   updateBooking,
   writeAdminSettings,
-  type AdminPackageOverride,
   type AdminSettings,
   type BookingRecord,
 } from "../db";
@@ -327,7 +326,7 @@ export async function sendResendEmail({
   });
 
   const raw = await response.text();
-  let data: any = null;
+  let data: unknown = null;
   try {
     data = raw ? JSON.parse(raw) : null;
   } catch {
@@ -335,10 +334,34 @@ export async function sendResendEmail({
   }
 
   if (!response.ok) {
-    throw new Error(data?.message || data?.error || `Resend email failed (${response.status})`);
+    throw new Error(extractErrorMessage(data) || `Resend email failed (${response.status})`);
   }
 
-  return { provider: "resend", id: data?.id || null, to: recipients, subject };
+  const resendResponse = data && typeof data === "object" ? (data as Record<string, unknown>) : {};
+
+  return {
+    provider: "resend",
+    id: typeof resendResponse.id === "string" ? resendResponse.id : null,
+    to: recipients,
+    subject,
+  };
+}
+
+function extractErrorMessage(value: unknown) {
+  if (typeof value === "string") return value;
+  if (!value || typeof value !== "object") return "";
+
+  const record = value as Record<string, unknown>;
+  if (typeof record.message === "string") return record.message;
+  if (typeof record.error === "string") return record.error;
+
+  if (record.error && typeof record.error === "object") {
+    const errorRecord = record.error as Record<string, unknown>;
+    if (typeof errorRecord.message === "string") return errorRecord.message;
+    if (typeof errorRecord.error === "string") return errorRecord.error;
+  }
+
+  return "";
 }
 
 export async function createBillplzBill(booking: BookingRecord) {
@@ -374,7 +397,7 @@ export async function createBillplzBill(booking: BookingRecord) {
   });
 
   const raw = await response.text();
-  let data: any = null;
+  let data: unknown = null;
   try {
     data = raw ? JSON.parse(raw) : null;
   } catch {
@@ -382,12 +405,14 @@ export async function createBillplzBill(booking: BookingRecord) {
   }
 
   if (!response.ok) {
-    throw new Error(data?.error?.message || data?.error || "Billplz checkout failed");
+    throw new Error(extractErrorMessage(data) || "Billplz checkout failed");
   }
 
+  const billplzResponse = data && typeof data === "object" ? (data as Record<string, unknown>) : {};
+
   return {
-    paymentUrl: data?.url || "",
-    billId: data?.id || "",
+    paymentUrl: typeof billplzResponse.url === "string" ? billplzResponse.url : "",
+    billId: typeof billplzResponse.id === "string" ? billplzResponse.id : "",
     raw: data,
   };
 }

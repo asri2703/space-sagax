@@ -3,7 +3,6 @@ type RuntimeEnv = Record<string, string | undefined> & {
 };
 
 declare global {
-  // eslint-disable-next-line no-var
   var __SAGA_RUNTIME_ENV__: RuntimeEnv | undefined;
 }
 

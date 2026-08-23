@@ -1,10 +1,5 @@
-import {
-  BOOKINGS_INDEX_SQL,
-  BOOKINGS_TABLE_SQL,
-  INITIAL_SETTINGS_KEY,
-  SETTINGS_SCHEMA_SQL,
-} from "./schema";
-import { getRuntimeEnv } from "@/lib/runtime-env";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
 
 export type BookingRecord = Record<string, unknown> & {
   reference: string;
@@ -26,27 +21,13 @@ export type AdminPackageOverride = {
   updated_at: string;
 };
 
-let schemaReady: Promise<void> | null = null;
+const dataDir = path.join(process.cwd(), "data");
+const bookingsPath = path.join(dataDir, "bookings.json");
+const settingsPath = path.join(dataDir, "admin-settings.json");
 
-function getDb() {
-  const env = getRuntimeEnv();
-  if (!env.DB) {
-    throw new Error(
-      "Cloudflare D1 binding `DB` is unavailable. Set the `d1` field in .openai/hosting.json to `DB` or let the control plane inject the real binding values before using the database."
-    );
-  }
-
-  return env.DB as {
-    batch: (statements: Array<{ run: () => Promise<unknown> }>) => Promise<unknown>;
-    prepare: (sql: string) => {
-      bind: (...values: unknown[]) => {
-        run: () => Promise<unknown>;
-        first: <T>() => Promise<T | null>;
-        all: <T>() => Promise<{ results?: T[] }>;
-      };
-    };
-  };
-}
+let bookingsCache: BookingRecord[] | null = null;
+let adminSettingsCache: AdminSettings | null = null;
+let loadPromise: Promise<void> | null = null;
 
 function defaultAdminSettings(): AdminSettings {
   return {
@@ -86,74 +67,62 @@ function normalizeAdminSettings(input: unknown): AdminSettings {
   return settings;
 }
 
-async function ensureSchema() {
-  if (!schemaReady) {
-    schemaReady = (async () => {
-      const db = getDb();
-      await db.batch([
-        db.prepare(BOOKINGS_TABLE_SQL).bind(),
-        db.prepare(BOOKINGS_INDEX_SQL).bind(),
-        db.prepare(SETTINGS_SCHEMA_SQL).bind(),
-      ]);
+async function readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
+  try {
+    const raw = await readFile(filePath, "utf8");
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+async function persistJsonFile(filePath: string, value: unknown) {
+  try {
+    await mkdir(dataDir, { recursive: true });
+    await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+  } catch {
+    // Vercel deployments can be read-only. Keep the request alive even when
+    // persistence is unavailable.
+  }
+}
+
+async function ensureLoaded() {
+  if (!loadPromise) {
+    loadPromise = (async () => {
+      bookingsCache = await readJsonFile<BookingRecord[]>(bookingsPath, []);
+      adminSettingsCache = normalizeAdminSettings(
+        await readJsonFile<AdminSettings>(settingsPath, defaultAdminSettings())
+      );
     })();
   }
 
-  await schemaReady;
+  await loadPromise;
+}
+
+function sortBookings(items: BookingRecord[]) {
+  return [...items].sort((a, b) => {
+    const aTime = new Date(String(a.created_at || 0)).getTime();
+    const bTime = new Date(String(b.created_at || 0)).getTime();
+    return bTime - aTime;
+  });
 }
 
 export async function readBookings(): Promise<BookingRecord[]> {
-  await ensureSchema();
-  const db = getDb();
-  const result = await db
-    .prepare("SELECT reference, payload, created_at, updated_at FROM bookings ORDER BY created_at DESC")
-    .bind()
-    .all<{ reference: string; payload: string; created_at: string; updated_at: string }>();
-
-  return (result.results || []).map((row) => ({
-    ...(JSON.parse(row.payload) as Record<string, unknown>),
-    reference: row.reference,
-    created_at: row.created_at,
-    updated_at: row.updated_at,
-  }));
+  await ensureLoaded();
+  return sortBookings(bookingsCache || []);
 }
 
 export async function getBooking(reference: string): Promise<BookingRecord | null> {
-  await ensureSchema();
-  const db = getDb();
-  const result = await db
-    .prepare("SELECT reference, payload, created_at, updated_at FROM bookings WHERE reference = ?1 LIMIT 1")
-    .bind(reference)
-    .first<{ reference: string; payload: string; created_at: string; updated_at: string }>();
-
-  if (!result) return null;
-
-  return {
-    ...(JSON.parse(result.payload) as Record<string, unknown>),
-    reference: result.reference,
-    created_at: result.created_at,
-    updated_at: result.updated_at,
-  };
+  await ensureLoaded();
+  return (bookingsCache || []).find((booking) => booking.reference === reference) || null;
 }
 
 export async function saveBooking(booking: BookingRecord): Promise<BookingRecord> {
-  await ensureSchema();
-  const db = getDb();
-  await db
-    .prepare(
-      `INSERT INTO bookings (reference, payload, created_at, updated_at)
-       VALUES (?1, ?2, ?3, ?4)
-       ON CONFLICT(reference) DO UPDATE SET
-         payload = excluded.payload,
-         created_at = excluded.created_at,
-         updated_at = excluded.updated_at`
-    )
-    .bind(
-      booking.reference,
-      JSON.stringify(booking),
-      booking.created_at,
-      booking.updated_at
-    )
-    .run();
+  await ensureLoaded();
+  const next = (bookingsCache || []).filter((item) => item.reference !== booking.reference);
+  next.unshift(booking);
+  bookingsCache = next;
+  await persistJsonFile(bookingsPath, bookingsCache);
 
   return booking;
 }
@@ -172,38 +141,20 @@ export async function updateBooking(
 }
 
 export async function readAdminSettings(): Promise<AdminSettings> {
-  await ensureSchema();
-  const db = getDb();
-  const row = await db
-    .prepare("SELECT value FROM site_settings WHERE key = ?1 LIMIT 1")
-    .bind(INITIAL_SETTINGS_KEY)
-    .first<{ value: string }>();
-
-  if (!row) return defaultAdminSettings();
-  try {
-    return normalizeAdminSettings(JSON.parse(row.value));
-  } catch {
-    return defaultAdminSettings();
-  }
+  await ensureLoaded();
+  return adminSettingsCache || defaultAdminSettings();
 }
 
 export async function writeAdminSettings(settings: AdminSettings): Promise<AdminSettings> {
-  await ensureSchema();
-  const db = getDb();
   const normalized = normalizeAdminSettings(settings);
-  const now = new Date().toISOString();
-  await db
-    .prepare(
-      `INSERT INTO site_settings (key, value, updated_at)
-       VALUES (?1, ?2, ?3)
-       ON CONFLICT(key) DO UPDATE SET
-         value = excluded.value,
-         updated_at = excluded.updated_at`
-    )
-    .bind(INITIAL_SETTINGS_KEY, JSON.stringify(normalized), now)
-    .run();
+  adminSettingsCache = normalized;
+  await persistJsonFile(settingsPath, normalized);
 
   return normalized;
 }
 
-export { defaultAdminSettings, normalizeAdminSettings, ensureSchema };
+export async function ensureSchema() {
+  await ensureLoaded();
+}
+
+export { defaultAdminSettings, normalizeAdminSettings };
