@@ -1,0 +1,403 @@
+/* Admin-specific styles, dark theme — restored from styles.css pre-rebuild.
+ * Self-contained: declares its own color variables so it doesn't depend on
+ * the public site's light theme tokens.
+ */
+
+.admin-shell {
+  color-scheme: dark;
+  --bg: #07090f;
+  --bg-2: #0c111b;
+  --panel: rgba(11, 14, 21, 0.84);
+  --surface: rgba(255, 255, 255, 0.04);
+  --line: rgba(126, 231, 255, 0.18);
+  --muted: #94a3b8;
+  --text: #f8fafc;
+  --accent: #7ee7ff;
+  --accent-2: #7ee7ff;
+  --accent-soft: rgba(126, 231, 255, 0.12);
+  --shadow-lg: 0 30px 60px rgba(0, 0, 0, 0.5);
+  --radius-lg: 18px;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  background: radial-gradient(1200px 600px at 20% -10%, rgba(126, 231, 255, 0.18), transparent 60%),
+              radial-gradient(900px 500px at 80% 0%, rgba(94, 161, 255, 0.18), transparent 60%),
+              linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.admin-shell .page-shell {
+  background: transparent;
+}
+
+.admin-shell .topbar {
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+  backdrop-filter: blur(16px);
+}
+
+.admin-shell .brand-mark {
+  background: linear-gradient(135deg, var(--accent), #5fa1ff);
+}
+
+.admin-shell .topnav a {
+  color: var(--text);
+}
+
+.admin-shell .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+
+.admin-shell .btn-primary {
+  background: linear-gradient(135deg, var(--accent), #5fa1ff);
+  color: #02101a;
+}
+
+.admin-shell .btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-shell .btn-ghost {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--line);
+}
+
+.admin-shell .section-heading p.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.75rem;
+  color: var(--accent);
+  margin: 0 0 12px;
+}
+
+.admin-shell .section-heading h1,
+.admin-shell .section-heading h2 {
+  background: linear-gradient(135deg, #ffffff 8%, #8cc8ff 42%, #d9f7ff 72%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin: 0 0 14px;
+  font-weight: 800;
+}
+
+.admin-shell .admin-hero h1 {
+  max-width: 14ch;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+}
+
+.admin-shell .admin-main {
+  display: grid;
+  gap: 18px;
+  padding: 24px 0 64px;
+}
+
+.admin-shell .admin-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  backdrop-filter: blur(20px);
+}
+
+.admin-shell .admin-login,
+.admin-shell .admin-status,
+.admin-shell .notification-card,
+.admin-shell .admin-price-card,
+.admin-shell .admin-detail,
+.admin-shell .admin-booking-item,
+.admin-shell .empty-state {
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(16, 20, 30, 0.9), rgba(10, 13, 19, 0.82));
+  box-shadow: var(--shadow-lg);
+}
+
+.admin-shell .admin-login,
+.admin-shell .admin-status,
+.admin-shell .notification-card {
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(20px);
+}
+
+.admin-shell .admin-login {
+  padding: 18px;
+}
+
+.admin-shell .admin-login label {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.admin-shell .admin-login input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+}
+
+.admin-shell .admin-login input::placeholder {
+  color: #727b90;
+}
+
+.admin-shell .admin-login input:focus {
+  outline: none;
+  border-color: rgba(126, 231, 255, 0.45);
+  box-shadow: 0 0 0 4px rgba(126, 231, 255, 0.1);
+}
+
+.admin-shell .form-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.admin-shell .admin-logged-in {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.admin-shell .admin-status {
+  padding: 14px 16px;
+  color: var(--text);
+  margin-top: 16px;
+}
+
+.admin-shell .admin-status-success {
+  border-color: rgba(126, 231, 255, 0.2);
+  background: rgba(126, 231, 255, 0.08);
+}
+
+.admin-shell .admin-status-error {
+  border-color: rgba(255, 120, 120, 0.22);
+  background: rgba(255, 120, 120, 0.08);
+}
+
+.admin-shell .admin-status-info {
+  border-color: rgba(94, 161, 255, 0.22);
+  background: rgba(94, 161, 255, 0.08);
+}
+
+.admin-shell .admin-price-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.admin-shell .admin-price-card {
+  padding: 18px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-shell .admin-price-card label {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 0;
+  font-weight: 700;
+}
+
+.admin-shell .admin-price-card input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+}
+
+.admin-shell .admin-price-card input:focus {
+  outline: none;
+  border-color: rgba(126, 231, 255, 0.45);
+  box-shadow: 0 0 0 4px rgba(126, 231, 255, 0.1);
+}
+
+.admin-shell .admin-price-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-shell .admin-kicker {
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--accent-2);
+}
+
+.admin-shell .admin-price-head strong {
+  font-family: var(--font-mono), monospace;
+  font-size: 1.6rem;
+  letter-spacing: -0.06em;
+}
+
+.admin-shell .admin-price-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.admin-shell .admin-booking-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(320px, 1.2fr);
+  gap: 18px;
+}
+
+@media (max-width: 720px) {
+  .admin-shell .admin-booking-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-shell .admin-bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-shell .admin-booking-item {
+  text-align: left;
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(16, 20, 30, 0.9), rgba(10, 13, 19, 0.82));
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+}
+
+.admin-shell .admin-booking-item.is-selected {
+  border-color: rgba(126, 231, 255, 0.45);
+  box-shadow: 0 0 0 4px rgba(126, 231, 255, 0.1);
+}
+
+.admin-shell .admin-booking-ref {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.8rem;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
+.admin-shell .badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.admin-shell .badge-accent {
+  background: rgba(126, 231, 255, 0.12);
+  color: var(--accent);
+}
+
+.admin-shell .badge-muted {
+  background: rgba(148, 163, 184, 0.12);
+  color: var(--muted);
+}
+
+.admin-shell .admin-detail {
+  padding: 18px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(16, 20, 30, 0.9), rgba(10, 13, 19, 0.82));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-shell .admin-detail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-shell .admin-detail-head h3 {
+  margin: 4px 0;
+  font-size: 1.25rem;
+}
+
+.admin-shell .muted-copy {
+  color: var(--muted);
+  margin: 0;
+}
+
+.admin-shell .admin-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+}
+
+.admin-shell .admin-detail-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-shell .admin-detail-grid span {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.admin-shell .admin-detail-grid strong {
+  font-size: 0.95rem;
+}
+
+.admin-shell .admin-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.admin-shell .empty-state {
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  text-align: center;
+  color: var(--muted);
+}
+
+.admin-shell .notification-card {
+  padding: 16px 18px;
+  border-radius: var(--radius-lg);
+}
+
+.admin-shell .notification-card strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--accent);
+}
+
+.admin-shell .notification-card p {
+  margin: 0;
+  color: var(--muted);
+}
