@@ -3,6 +3,82 @@
 import { useEffect, useState, useCallback } from "react";
 import "./admin.css";
 
+// Decorative SVG shapes (aria-hidden) sprinkled behind the hero.
+function HeroDecorations() {
+  return (
+    <svg
+      aria-hidden="true"
+      width="100%"
+      height="160"
+      viewBox="0 0 1200 160"
+      preserveAspectRatio="none"
+      style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0 }}
+    >
+      <circle cx="120" cy="40" r="14" fill="#FBBF24" stroke="#1E293B" strokeWidth="2" />
+      <circle cx="220" cy="100" r="8" fill="#34D399" stroke="#1E293B" strokeWidth="2" />
+      <path d="M 320 60 q 12 -14 24 0 t 24 0 t 24 0" fill="none" stroke="#F472B6" strokeWidth="3" strokeLinecap="round" />
+      <rect x="420" y="30" width="22" height="22" fill="#8B5CF6" stroke="#1E293B" strokeWidth="2" transform="rotate(20 431 41)" />
+      <path d="M 540 90 l 14 -16 l 14 16 l -14 16 z" fill="#FBBF24" stroke="#1E293B" strokeWidth="2" />
+      <circle cx="700" cy="50" r="10" fill="#F472B6" stroke="#1E293B" strokeWidth="2" />
+      <path d="M 820 80 q 14 -16 28 0 t 28 0" fill="none" stroke="#34D399" strokeWidth="3" strokeLinecap="round" />
+      <circle cx="980" cy="60" r="6" fill="#8B5CF6" stroke="#1E293B" strokeWidth="2" />
+      <rect x="1080" y="40" width="18" height="18" fill="#34D399" stroke="#1E293B" strokeWidth="2" transform="rotate(-15 1089 49)" />
+    </svg>
+  );
+}
+
+// A floating yellow star badge ("MOST POPULAR") for the middle pricing card.
+function PopularStarBadge() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: "absolute",
+        top: "-18px",
+        right: "-18px",
+        width: "96px",
+        height: "96px",
+        transform: "rotate(15deg)",
+        pointerEvents: "none",
+      }}
+    >
+      <svg viewBox="0 0 100 100" width="100%" height="100%">
+        <polygon
+          points="50,5 61,38 95,38 67,58 78,90 50,70 22,90 33,58 5,38 39,38"
+          fill="#FBBF24"
+          stroke="#1E293B"
+          strokeWidth="3"
+          strokeLinejoin="round"
+        />
+        <text
+          x="50"
+          y="48"
+          textAnchor="middle"
+          fontSize="9"
+          fontWeight="800"
+          fill="#1E293B"
+          fontFamily="Outfit, system-ui, sans-serif"
+          letterSpacing="0.4"
+        >
+          MOST
+        </text>
+        <text
+          x="50"
+          y="60"
+          textAnchor="middle"
+          fontSize="9"
+          fontWeight="800"
+          fill="#1E293B"
+          fontFamily="Outfit, system-ui, sans-serif"
+          letterSpacing="0.4"
+        >
+          POPULAR
+        </text>
+      </svg>
+    </div>
+  );
+}
+
 type PackageKey = "hour" | "four" | "full";
 
 type PackageOffer = {
@@ -273,8 +349,9 @@ export default function AdminClient() {
       </header>
 
       <main className="admin-main">
-        <section className="section admin-hero">
-          <div className="section-heading">
+        <section className="section admin-hero" style={{ position: "relative" }}>
+                  <HeroDecorations />
+                  <div className="section-heading" style={{ position: "relative", zIndex: 1 }}>
             <p className="eyebrow">Admin dashboard</p>
             <h1>Keep default pricing intact, then layer promo pricing when needed.</h1>
             <p>
@@ -333,9 +410,15 @@ export default function AdminClient() {
                   const pkg = publicConfig?.packages?.[key];
                   if (!pkg) return null;
                   const isPromo = pkg.is_promo;
-                  return (
-                    <article key={key} className="admin-price-card">
-                      <div className="admin-price-head">
+                                    const isFeatured = key === "four";
+                                    return (
+                                      <article
+                                        key={key}
+                                        className="admin-price-card"
+                                        style={isFeatured ? { position: "relative" } : undefined}
+                                      >
+                                        {isFeatured && <PopularStarBadge />}
+                                        <div className="admin-price-head">
                         <div>
                           <p className="admin-kicker">{pkg.title}</p>
                           <strong>{pkg.human_price}</strong>
