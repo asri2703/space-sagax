@@ -9,6 +9,24 @@ Isolated workspace for the `space.sagaxventures.com` booking flow.
 
 This folder is separate from `work2u-crm` so Saga X booking changes stay isolated.
 
+## API endpoints
+
+| Method | Path                          | Purpose                                                                 |
+| ------ | ----------------------------- | ----------------------------------------------------------------------- |
+| GET    | `/api/public-config`          | Site name, bank details, and package offers for the booking form.       |
+| GET    | `/api/availability`           | Calendar month view of available vs fully-booked days. Optional `?month=YYYY-MM`. |
+| POST   | `/api/bookings`               | Create a booking; returns the Billplz payment URL when payment_method is `billplz`. |
+| GET    | `/api/bookings/[reference]`   | Read a single booking (admin only).                                     |
+| PATCH  | `/api/bookings/[reference]`   | Update a booking (admin only).                                          |
+| POST   | `/api/bookings/[reference]/resend` | Resend the invoice email (admin only).                              |
+| GET    | `/api/admin/bookings`         | List all bookings (admin only).                                         |
+| GET/PATCH | `/api/admin/settings`      | Read/update package overrides (admin only).                             |
+| POST   | `/api/billplz/callback`       | Billplz webhook receiver.                                               |
+| GET    | `/api/billplz/redirect`       | Billplz redirect target after payment.                                  |
+
+All admin endpoints require an `x-admin-key` header (or `Authorization: Bearer ...`)
+matching `ADMIN_ACCESS_KEY` from `local.env`.
+
 ## Local run
 
 1. Fill in `local.env`.

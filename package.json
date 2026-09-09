@@ -6,12 +6,13 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "test": "npm run build",
-    "lint": "eslint . --ignore-pattern .next"
-  },
+      "dev": "next dev",
+      "build": "next build",
+      "start": "next start",
+      "test": "npm run test:unit && npm run build",
+      "test:unit": "node --test --experimental-strip-types app/api/**/_*.test.ts",
+      "lint": "eslint . --ignore-pattern .next"
+    },
   "dependencies": {
     "drizzle-orm": "0.45.2",
     "next": "16.2.6",
