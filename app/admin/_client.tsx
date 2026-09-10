@@ -489,6 +489,7 @@ export default function AdminClient() {
       if (!booking?.reference) return;
       setDownloadingPdf(true);
       try {
+        console.log("[admin] downloadInvoicePdf start", booking.reference);
         const response = await fetch(
           `/api/admin/invoice/${encodeURIComponent(booking.reference)}/pdf`,
           {
@@ -496,31 +497,56 @@ export default function AdminClient() {
             headers: { "x-admin-key": adminKey || "" },
           }
         );
+        console.log("[admin] PDF response", response.status, response.statusText);
         if (!response.ok) {
           let message = `Download failed (${response.status})`;
           try {
             const data = await response.json();
             if (data?.error) message = data.error;
+            if (data?.stage) message += ` [${data.stage}]`;
           } catch {
             // not JSON
           }
           throw new Error(message);
         }
         const blob = await response.blob();
+        console.log("[admin] PDF blob", blob.size, "bytes, type=", blob.type);
+        if (blob.size === 0) {
+          throw new Error("Server returned an empty PDF.");
+        }
+        if (!blob.type.includes("pdf")) {
+          throw new Error(`Server returned ${blob.type || "unknown"}, expected PDF.`);
+        }
+        // Try the programmatic download first; on mobile Safari and
+        // some hardened browsers the synthetic <a>.click() is a no-op,
+        // so fall back to opening the blob in a new tab.
         const blobUrl = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = blobUrl;
         a.download = `invoice-${booking.reference}.pdf`;
+        a.rel = "noopener";
+        a.style.display = "none";
         document.body.appendChild(a);
         a.click();
         a.remove();
-        // Free the object URL after the click has been processed.
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+        // Give the browser a moment to honour the download, then check
+        // whether the user agent is one that swallows synthetic clicks.
+        setTimeout(() => {
+          // If the user is still on the admin page (i.e. the click
+          // didn't navigate away or trigger a download bar), the
+          // browser likely ignored the synthetic anchor. Open in a
+          // new tab as a fallback.
+          if (typeof document !== "undefined" && document.visibilityState === "visible") {
+            window.open(blobUrl, "_blank", "noopener,noreferrer");
+          }
+          setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+        }, 300);
         setStatus({
           kind: "success",
           text: `Invoice ${booking.reference} downloaded.`,
         });
       } catch (e) {
+        console.error("[admin] downloadInvoicePdf error", e);
         setStatus({
           kind: "error",
           text: e instanceof Error ? e.message : "Could not download invoice.",
