@@ -739,6 +739,61 @@
   margin-top: 4px;
 }
 
+/* Booking detail panel — three stacked rows with clear visual separation */
+.admin-shell .admin-detail-row {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border: var(--border-w) solid var(--border);
+  border-radius: var(--radius-md);
+  background: #fff;
+  display: grid;
+  gap: 10px;
+}
+
+.admin-shell .admin-detail-row[data-row="status"] {
+  background: #f8fafc;
+  border-color: var(--fg);
+  box-shadow: var(--pop-sm);
+}
+
+.admin-shell .admin-detail-row[data-row="invoice"] {
+  background: #fffaeb;
+  border-color: var(--fg);
+  box-shadow: var(--pop-sm);
+}
+
+.admin-shell .admin-detail-row[data-row="share"] {
+  background: #fff;
+  border-color: var(--border);
+}
+
+.admin-shell .admin-detail-row .admin-kicker {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.admin-shell .admin-detail-row .muted-copy {
+  margin: 0 0 4px 0;
+  font-size: 0.85rem;
+  color: var(--muted-fg);
+}
+
+.admin-shell .visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ============================================================
  * Custom invoice editor (in booking detail panel)
  * ============================================================ */

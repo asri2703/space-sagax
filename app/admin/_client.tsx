@@ -637,201 +637,6 @@ export default function AdminClient() {
               </form>
             </section>
 
-            <section id="custom-invoice" className="section admin-panel">
-              <div className="section-heading">
-                <p className="eyebrow">Custom invoice</p>
-                <h2>Build a one-off invoice and send it to your client.</h2>
-                <p>
-                  Pick a booking from the list below, then override the amount, label, and admin
-                  note. The next invoice email uses whatever is saved here.
-                </p>
-              </div>
-
-              {!selectedBooking ? (
-                <div className="admin-invoice-empty">
-                  <p className="muted-copy">
-                    Pick a booking from the <strong>Bookings</strong> section below to start a custom invoice.
-                    If there are no bookings yet, create one from the public site first.
-                  </p>
-                </div>
-              ) : (
-                <form className="admin-invoice-form" onSubmit={saveCustomInvoice}>
-                  <div className="admin-invoice-head">
-                    <p className="admin-kicker">
-                      Editing invoice for {selectedBooking.reference} — {selectedBooking.name || "Unnamed"}
-                    </p>
-                    <p className="muted-copy">
-                      Override the default amount and add a label / note for this client before resending.
-                    </p>
-
-                    <div className="admin-status-row" role="group" aria-label="Booking status">
-                      <label className="admin-status-label">
-                        Status
-                        <select
-                          value={statusDraft}
-                          onChange={(e) => setStatusDraft(e.target.value)}
-                          disabled={updatingStatus}
-                        >
-                          <option value="pending_payment">pending_payment</option>
-                          <option value="pending_review">pending_review</option>
-                          <option value="confirmed">confirmed</option>
-                          <option value="cancelled">cancelled</option>
-                        </select>
-                      </label>
-                      <div className="admin-status-actions">
-                        <button
-                          type="button"
-                          className="btn btn-primary"
-                          onClick={() => setBookingStatus(selectedBooking.reference, statusDraft)}
-                          disabled={updatingStatus || statusDraft === (selectedBooking.status || "")}
-                          title="Save the selected status and lock / release the date accordingly"
-                        >
-                          {updatingStatus ? "Saving status…" : "Save status"}
-                        </button>
-                        {selectedBooking.status !== "confirmed" && (
-                          <button
-                            type="button"
-                            className="btn btn-confirm"
-                            onClick={() => setBookingStatus(selectedBooking.reference, "confirmed")}
-                            disabled={updatingStatus}
-                            title="Mark the booking as paid and lock the date so it shows as fully booked"
-                          >
-                            Confirm &amp; lock date
-                          </button>
-                        )}
-                        {selectedBooking.status !== "cancelled" && (
-                          <button
-                            type="button"
-                            className="btn btn-danger"
-                            onClick={() => {
-                              if (typeof window !== "undefined" && window.confirm("Cancel this booking and release the date?")) {
-                                setBookingStatus(selectedBooking.reference, "cancelled");
-                              }
-                            }}
-                            disabled={updatingStatus}
-                            title="Cancel the booking and release the date for other clients"
-                          >
-                            Cancel booking
-                          </button>
-                        )}
-                      </div>
-                      {statusError && (
-                        <p className="admin-status-error" role="alert">
-                          {statusError}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="admin-invoice-grid">
-                    <label>
-                      Custom amount (MYR)
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={customAmount}
-                        onChange={(e) => setCustomAmount(e.target.value)}
-                        placeholder="e.g. 120.00"
-                      />
-                    </label>
-
-                    <label>
-                      Price label
-                      <input
-                        type="text"
-                        value={priceLabel}
-                        onChange={(e) => setPriceLabel(e.target.value)}
-                        placeholder="Promo, special event, etc."
-                      />
-                    </label>
-
-                    <label className="admin-invoice-note">
-                      Admin note (internal)
-                      <textarea
-                        rows={3}
-                        value={adminNote}
-                        onChange={(e) => setAdminNote(e.target.value)}
-                        placeholder="Internal note — not sent to the client"
-                      />
-                    </label>
-                  </div>
-
-                  <div className="admin-invoice-actions">
-                    <button
-                      type="submit"
-                      className="btn btn-primary"
-                      disabled={savingBooking}
-                    >
-                      {savingBooking ? "Saving…" : "Save invoice"}
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-ghost"
-                      onClick={resetCustomPrice}
-                      disabled={resettingPrice}
-                    >
-                      {resettingPrice ? "Resetting…" : "Reset to default price"}
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-ghost"
-                      onClick={() => setPreviewEmail((v) => !v)}
-                    >
-                      {previewEmail ? "Hide email preview" : "Preview email"}
-                    </button>
-                  </div>
-
-                  {previewEmail && (() => {
-                    // Use the live values from the form, so the preview
-                    // reflects what the client will see *after* save.
-                    const liveBooking = {
-                      ...selectedBooking,
-                      amount_cents: Number.isFinite(Number(customAmount))
-                        ? Math.round(Number(customAmount) * 100)
-                        : selectedBooking.amount_cents,
-                      price_label: priceLabel,
-                    };
-                    const preview = renderEmailPreview(liveBooking);
-                    return (
-                      <div className="admin-email-preview" aria-live="polite">
-                        <p className="admin-kicker">Subject</p>
-                        <p className="admin-email-subject">{preview.subject}</p>
-                        <p className="admin-kicker" style={{ marginTop: 12 }}>Body</p>
-                        <pre className="admin-email-body">{preview.body}</pre>
-                      </div>
-                    );
-                  })()}
-
-                  <div className="admin-invoice-actions">
-                    <button
-                      type="button"
-                      className="btn btn-primary"
-                      onClick={resendBookingWithCustomInvoice}
-                      disabled={resending}
-                    >
-                      {resending ? "Sending…" : "Resend invoice to client"}
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-ghost"
-                      onClick={copyAlertText}
-                    >
-                      Copy alert text
-                    </button>
-                    <a
-                      className="btn btn-ghost"
-                      href={buildWhatsappUrl(selectedBooking)}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      WhatsApp alert
-                    </a>
-                  </div>
-                </form>
-              )}
-            </section>
-
             <section id="bookings" className="section admin-panel">
               <div className="section-heading">
                 <p className="eyebrow">Bookings</p>
@@ -879,130 +684,187 @@ export default function AdminClient() {
                       </div>
 
                       <div className="admin-detail-grid">
-                                              <div><span>Package</span><strong>{selectedBooking.package_title || ""}</strong></div>
-                                              <div><span>Event date</span><strong>{selectedBooking.event_date || ""}</strong></div>
-                                              <div><span>Start time</span><strong>{selectedBooking.start_time || ""}</strong></div>
-                                              <div><span>Payment</span><strong>{selectedBooking.payment_method || ""}</strong></div>
-                                              <div><span>Amount</span><strong>{formatMyr(selectedBooking.amount_cents || 0)}</strong></div>
-                                              <div><span>Base price</span><strong>{formatMyr(selectedBooking.base_amount_cents || selectedBooking.amount_cents || 0)}</strong></div>
-                                            </div>
+                        <div><span>Package</span><strong>{selectedBooking.package_title || ""}</strong></div>
+                        <div><span>Event date</span><strong>{selectedBooking.event_date || ""}</strong></div>
+                        <div><span>Start time</span><strong>{selectedBooking.start_time || ""}</strong></div>
+                        <div><span>Payment</span><strong>{selectedBooking.payment_method || ""}</strong></div>
+                        <div><span>Amount</span><strong>{formatMyr(selectedBooking.amount_cents || 0)}</strong></div>
+                        <div><span>Base price</span><strong>{formatMyr(selectedBooking.base_amount_cents || selectedBooking.amount_cents || 0)}</strong></div>
+                      </div>
 
-                                            {/* Custom invoice editor — replaces the default invoice with
-                                                a custom amount / label / note before sending to the client. */}
-                                            <form className="admin-invoice-form" onSubmit={saveCustomInvoice}>
-                                              <div className="admin-invoice-head">
-                                                <p className="admin-kicker">Custom invoice</p>
-                                                <p className="muted-copy">
-                                                  Override the default amount and add a label / note for this client before resending.
-                                                </p>
-                                              </div>
+                      {/* Row 1 — Status / lock date */}
+                      <div className="admin-detail-row" data-row="status">
+                        <p className="admin-kicker">Status</p>
+                        <div className="admin-status-row" role="group" aria-label="Booking status">
+                          <label className="admin-status-label">
+                            <span className="visually-hidden">Status</span>
+                            <select
+                              value={statusDraft}
+                              onChange={(e) => setStatusDraft(e.target.value)}
+                              disabled={updatingStatus}
+                            >
+                              <option value="pending_payment">pending_payment</option>
+                              <option value="pending_review">pending_review</option>
+                              <option value="confirmed">confirmed</option>
+                              <option value="cancelled">cancelled</option>
+                            </select>
+                          </label>
+                          <div className="admin-status-actions">
+                            <button
+                              type="button"
+                              className="btn btn-primary"
+                              onClick={() => setBookingStatus(selectedBooking.reference, statusDraft)}
+                              disabled={updatingStatus || statusDraft === (selectedBooking.status || "")}
+                              title="Save the selected status and lock / release the date accordingly"
+                            >
+                              {updatingStatus ? "Saving…" : "Save status"}
+                            </button>
+                            {selectedBooking.status !== "confirmed" && (
+                              <button
+                                type="button"
+                                className="btn btn-confirm"
+                                onClick={() => setBookingStatus(selectedBooking.reference, "confirmed")}
+                                disabled={updatingStatus}
+                                title="Mark the booking as paid and lock the date so it shows as fully booked"
+                              >
+                                Confirm &amp; lock date
+                              </button>
+                            )}
+                            {selectedBooking.status !== "cancelled" && (
+                              <button
+                                type="button"
+                                className="btn btn-danger"
+                                onClick={() => {
+                                  if (typeof window !== "undefined" && window.confirm("Cancel this booking and release the date?")) {
+                                    setBookingStatus(selectedBooking.reference, "cancelled");
+                                  }
+                                }}
+                                disabled={updatingStatus}
+                                title="Cancel the booking and release the date for other clients"
+                              >
+                                Cancel booking
+                              </button>
+                            )}
+                          </div>
+                          {statusError && (
+                            <p className="admin-status-error" role="alert">
+                              {statusError}
+                            </p>
+                          )}
+                        </div>
+                      </div>
 
-                                              <div className="admin-invoice-grid">
-                                                <label>
-                                                  Custom amount (MYR)
-                                                  <input
-                                                    type="number"
-                                                    min="0"
-                                                    step="0.01"
-                                                    value={customAmount}
-                                                    onChange={(e) => setCustomAmount(e.target.value)}
-                                                    placeholder="e.g. 120.00"
-                                                  />
-                                                </label>
+                      {/* Row 2 — Custom invoice form */}
+                      <form className="admin-detail-row admin-invoice-form" data-row="invoice" onSubmit={saveCustomInvoice}>
+                        <p className="admin-kicker">Custom invoice</p>
+                        <p className="muted-copy">
+                          Override the default amount, add a label, and write an internal note for this client.
+                        </p>
+                        <div className="admin-invoice-grid">
+                          <label>
+                            Custom amount (MYR)
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={customAmount}
+                              onChange={(e) => setCustomAmount(e.target.value)}
+                              placeholder="e.g. 120.00"
+                            />
+                          </label>
+                          <label>
+                            Price label
+                            <input
+                              type="text"
+                              value={priceLabel}
+                              onChange={(e) => setPriceLabel(e.target.value)}
+                              placeholder="Promo, special event, etc."
+                            />
+                          </label>
+                          <label className="admin-invoice-note">
+                            Admin note (internal)
+                            <textarea
+                              rows={3}
+                              value={adminNote}
+                              onChange={(e) => setAdminNote(e.target.value)}
+                              placeholder="Internal note — not sent to the client"
+                            />
+                          </label>
+                        </div>
+                        <div className="admin-detail-actions">
+                          <button
+                            type="submit"
+                            className="btn btn-primary"
+                            disabled={savingBooking}
+                          >
+                            {savingBooking ? "Saving…" : "Save invoice"}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-ghost"
+                            onClick={resetCustomPrice}
+                            disabled={resettingPrice}
+                          >
+                            {resettingPrice ? "Resetting…" : "Reset to default price"}
+                          </button>
+                        </div>
+                        {previewEmail && (() => {
+                          // Use the live values from the form, so the preview
+                          // reflects what the client will see *after* save.
+                          const liveBooking = {
+                            ...selectedBooking,
+                            amount_cents: Number.isFinite(Number(customAmount))
+                              ? Math.round(Number(customAmount) * 100)
+                              : selectedBooking.amount_cents,
+                            price_label: priceLabel,
+                          };
+                          const preview = renderEmailPreview(liveBooking);
+                          return (
+                            <div className="admin-email-preview" aria-live="polite">
+                              <p className="admin-kicker">Email preview</p>
+                              <p className="admin-email-subject"><strong>Subject:</strong> {preview.subject}</p>
+                              <pre className="admin-email-body">{preview.body}</pre>
+                            </div>
+                          );
+                        })()}
+                      </form>
 
-                                                <label>
-                                                  Price label
-                                                  <input
-                                                    type="text"
-                                                    value={priceLabel}
-                                                    onChange={(e) => setPriceLabel(e.target.value)}
-                                                    placeholder="Promo, special event, etc."
-                                                  />
-                                                </label>
-
-                                                <label className="admin-invoice-note">
-                                                  Admin note (internal)
-                                                  <textarea
-                                                    rows={3}
-                                                    value={adminNote}
-                                                    onChange={(e) => setAdminNote(e.target.value)}
-                                                    placeholder="Internal note — not sent to the client"
-                                                  />
-                                                </label>
-                                              </div>
-
-                                              <div className="admin-invoice-actions">
-                                                <button
-                                                  type="submit"
-                                                  className="btn btn-primary"
-                                                  disabled={savingBooking}
-                                                >
-                                                  {savingBooking ? "Saving…" : "Save invoice"}
-                                                </button>
-                                                <button
-                                                  type="button"
-                                                  className="btn btn-ghost"
-                                                  onClick={resetCustomPrice}
-                                                  disabled={resettingPrice}
-                                                >
-                                                  {resettingPrice ? "Resetting…" : "Reset to default price"}
-                                                </button>
-                                                <button
-                                                  type="button"
-                                                  className="btn btn-ghost"
-                                                  onClick={() => setPreviewEmail((v) => !v)}
-                                                >
-                                                  {previewEmail ? "Hide email preview" : "Preview email"}
-                                                </button>
-                                              </div>
-
-                                              {previewEmail && (() => {
-                                                // Use the live values from the form, so the preview
-                                                // reflects what the client will see *after* save.
-                                                const liveBooking = {
-                                                  ...selectedBooking,
-                                                  amount_cents: Number.isFinite(Number(customAmount))
-                                                    ? Math.round(Number(customAmount) * 100)
-                                                    : selectedBooking.amount_cents,
-                                                  price_label: priceLabel,
-                                                };
-                                                const preview = renderEmailPreview(liveBooking);
-                                                return (
-                                                  <div className="admin-email-preview" aria-live="polite">
-                                                    <p className="admin-kicker">Subject</p>
-                                                    <p className="admin-email-subject">{preview.subject}</p>
-                                                    <p className="admin-kicker" style={{ marginTop: 12 }}>Body</p>
-                                                    <pre className="admin-email-body">{preview.body}</pre>
-                                                  </div>
-                                                );
-                                              })()}
-                                            </form>
-
-                                            <div className="admin-detail-actions">
-                                              <button
-                                                type="button"
-                                                className="btn btn-primary"
-                                                onClick={resendBookingWithCustomInvoice}
-                                                disabled={resending}
-                                              >
-                                                {resending ? "Sending…" : "Resend invoice to client"}
-                                              </button>
-                                              <button
-                                                type="button"
-                                                className="btn btn-ghost"
-                                                onClick={copyAlertText}
-                                              >
-                                                Copy alert text
-                                              </button>
-                                              <a
-                                                className="btn btn-ghost"
-                                                href={buildWhatsappUrl(selectedBooking)}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                              >
-                                                WhatsApp alert
-                                              </a>
-                                            </div>
+                      {/* Row 3 — Send & share */}
+                      <div className="admin-detail-row" data-row="share">
+                        <p className="admin-kicker">Send &amp; share</p>
+                        <div className="admin-detail-actions">
+                          <button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={resendBookingWithCustomInvoice}
+                            disabled={resending}
+                          >
+                            {resending ? "Sending…" : "Resend invoice to client"}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-ghost"
+                            onClick={() => setPreviewEmail((v) => !v)}
+                          >
+                            {previewEmail ? "Hide email preview" : "Preview email"}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-ghost"
+                            onClick={copyAlertText}
+                          >
+                            Copy alert text
+                          </button>
+                          <a
+                            className="btn btn-ghost"
+                            href={buildWhatsappUrl(selectedBooking)}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            WhatsApp alert
+                          </a>
+                        </div>
+                      </div>
                     </>
                   )}
                 </aside>
