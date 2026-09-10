@@ -1,48 +1,33 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const display = Space_Grotesk({
+const display = Outfit({
   subsets: ["latin"],
-  variable: "--font-display",
+  variable: "--font-display-src",
+  display: "swap",
 });
-
-const body = Inter({
+const body = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-body",
+  variable: "--font-body-src",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
+  title: "Saga X Space — Hall Rental in Senawang",
+  description: "Book a hall in Senawang, Negeri Sembilan. Simple pricing, instant confirmation.",
   metadataBase: new URL("https://space.sagaxventures.com"),
-  title: "Saga X Space | Hall Booking in Senawang",
-  description:
-    "Book Saga X Space in Senawang for meetings, classes, workshops and small events with simple pricing and easy payment options.",
   openGraph: {
+    title: "Saga X Space — Hall Rental in Senawang",
+    description: "Book a hall in Senawang, Negeri Sembilan.",
     type: "website",
-    siteName: "Saga X Space",
-    title: "Saga X Space | Hall Booking in Senawang",
-    description:
-      "Book Saga X Space in Senawang for meetings, classes, workshops and small events with simple pricing and easy payment options.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Saga X Space | Hall Booking in Senawang",
-    description:
-      "Book Saga X Space in Senawang for meetings, classes, workshops and small events with simple pricing and easy payment options.",
-  },
-  robots: {
-    index: true,
-    follow: true,
+    url: "https://space.sagaxventures.com",
   },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-MY" className={`${display.variable} ${body.variable}`}>
+    <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body>{children}</body>
     </html>
   );
