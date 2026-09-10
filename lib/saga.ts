@@ -556,7 +556,31 @@ export async function updateAdminSettingsFromInput(body: {
   return writeAdminSettings(current);
 }
 
-export async function listBookingsForAdmin() {
+export type AdminBookingSummary = {
+  reference: string;
+  name?: string;
+  email?: string;
+  whatsapp?: string;
+  event_date?: string;
+  start_time?: string;
+  package_key?: string;
+  package_title?: string;
+  status?: string;
+  amount_cents?: number;
+  base_amount_cents?: number;
+  human_price?: string;
+  price_label?: string;
+  price_source?: string;
+  payment_method?: string;
+  admin_note?: string;
+  whatsapp_alert_url?: string;
+  whatsapp_alert_text?: string;
+  created_at?: string;
+  updated_at?: string;
+  [key: string]: unknown;
+};
+
+export async function listBookingsForAdmin(): Promise<AdminBookingSummary[]> {
   const bookings = await readBookings();
   return bookings.map((booking) => ({
     ...booking,

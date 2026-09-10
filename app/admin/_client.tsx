@@ -464,6 +464,17 @@ export default function AdminClient() {
       return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
     }
 
+    function buildInvoiceUrl(booking: Booking): string {
+      // Pass the admin key in the query string so the printable invoice
+      // page can authenticate without requiring a session login. The
+      // URL is short-lived (each click generates a fresh link) and
+      // sharing it is equivalent to sharing the admin key — only give
+      // it to clients you trust to view their own invoice.
+      const params = new URLSearchParams();
+      params.set("key", adminKey || "");
+      return `/invoice/${encodeURIComponent(booking.reference)}?${params.toString()}`;
+    }
+
     // Render the live email preview that will be sent. Mirrors what
     // bookingEmailHtml produces on the backend.
     function renderEmailPreview(booking: Booking): { subject: string; body: string } {
@@ -833,6 +844,15 @@ export default function AdminClient() {
                       <div className="admin-detail-row" data-row="share">
                         <p className="admin-kicker">Send &amp; share</p>
                         <div className="admin-detail-actions">
+                          <a
+                            className="btn btn-primary"
+                            href={buildInvoiceUrl(selectedBooking)}
+                            target="_blank"
+                            rel="noreferrer"
+                            title="Open a printable invoice for this booking — print or save as PDF to send to the client"
+                          >
+                            Download invoice
+                          </a>
                           <button
                             type="button"
                             className="btn btn-primary"
