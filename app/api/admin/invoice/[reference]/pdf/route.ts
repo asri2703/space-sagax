@@ -80,14 +80,20 @@ function buildInvoiceHtml(booking: AdminBookingSummary, bank: {
     line-height: 1.4;
   }
   .page { padding: 24px 28px; max-width: 760px; margin: 0 auto; }
+  /* Avoid breaking key sections across pages so the layout doesn't
+     get cut between the To/From parties or the line items table. */
+  .head, .parties, .event, table, .note, .foot { page-break-inside: avoid; }
   .head {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     padding-bottom: 18px;
     border-bottom: 2px dashed #cbd5e1;
+    gap: 16px;
   }
-  .brand { display: flex; gap: 12px; align-items: center; }
+  .brand { display: flex; gap: 12px; align-items: center; min-width: 0; }
+  .logo { display: inline-block; }
+  .logo svg { display: block; }
   .mark {
     width: 44px; height: 44px;
     background: #8b5cf6; color: #fff;
@@ -102,7 +108,7 @@ function buildInvoiceHtml(booking: AdminBookingSummary, bank: {
     letter-spacing: 1.5px; text-transform: uppercase; color: #8b5cf6;
   }
   h1 { margin: 2px 0 0; font-size: 28px; line-height: 1; }
-  .meta { display: grid; grid-template-columns: repeat(3, auto); gap: 4px 18px; text-align: right; }
+  .meta { display: grid; grid-template-columns: repeat(3, auto); gap: 4px 18px; text-align: right; flex-shrink: 0; }
   .meta > div { display: flex; flex-direction: column; }
   .meta span {
     font-size: 8px; text-transform: uppercase; letter-spacing: 1px;
@@ -115,7 +121,9 @@ function buildInvoiceHtml(booking: AdminBookingSummary, bank: {
     font-size: 10px !important; font-weight: 700 !important;
     background: ${statusColor[status] || "#cbd5e1"};
   }
-  .parties { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+  .parties { display: flex; gap: 24px; margin-top: 20px; }
+  .parties > div { flex: 1 1 0; min-width: 0; }
+  .parties p { overflow-wrap: anywhere; }
   .label {
     margin: 0 0 4px; font-size: 8px; font-weight: 700;
     letter-spacing: 1.5px; text-transform: uppercase; color: #8b5cf6;
@@ -173,7 +181,15 @@ function buildInvoiceHtml(booking: AdminBookingSummary, bank: {
 <div class="page">
   <header class="head">
     <div class="brand">
-      <span class="mark">SX</span>
+      <div class="logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" width="180" height="60" aria-label="Saga X">
+          <line stroke="#0a2e8c" stroke-width="2" stroke-linecap="round" x1="14" y1="14" x2="346" y2="106" />
+          <path stroke="#0a2e8c" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M 38 30 L 102 90" />
+          <path stroke="#0a2e8c" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" d="M 102 30 L 38 90" />
+          <path fill="#0a2e8c" d="M 60 44 L 80 60 L 60 76 L 56 72 L 72 60 L 56 48 Z" />
+          <text x="125" y="68" fill="#0a2e8c" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-weight="700" font-size="32" letter-spacing="6">SAGA-X</text>
+        </svg>
+      </div>
       <div>
         <p class="eyebrow">Saga X Space</p>
         <h1>Invoice</h1>
