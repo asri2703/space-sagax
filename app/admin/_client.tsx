@@ -121,8 +121,11 @@ type Booking = {
   base_amount_cents?: number;
   status?: string;
   payment_method?: string;
+  payment_url?: string;
   event_type?: string;
   notes?: string;
+  admin_note?: string;
+  price_label?: string;
   pax?: number | null;
   created_at?: string;
 };
@@ -290,43 +293,163 @@ export default function AdminClient() {
   }
 
   // --- Booking actions ---
-  const selectedBooking = bookings.find((b) => b.reference === selectedReference) || null;
+    const selectedBooking = bookings.find((b) => b.reference === selectedReference) || null;
 
-  async function patchBooking(reference: string, payload: Record<string, unknown>) {
-    try {
-      const data = await api(`/api/admin/bookings/${encodeURIComponent(reference)}`, {
-        method: "PATCH",
-        body: JSON.stringify(payload),
-      });
-      const updated: Booking = data.booking;
-      setBookings((prev) => prev.map((b) => (b.reference === reference ? updated : b)));
-      setStatus({ kind: "success", text: `Booking ${reference} updated.` });
-    } catch (e) {
-      setStatus({ kind: "error", text: e instanceof Error ? e.message : "Update failed." });
+    // Local form state for the custom invoice fields. Initialised from the
+    // selected booking and kept in sync when the user picks a different one.
+    const [customAmount, setCustomAmount] = useState<string>("");
+    const [priceLabel, setPriceLabel] = useState<string>("");
+    const [adminNote, setAdminNote] = useState<string>("");
+    const [savingBooking, setSavingBooking] = useState<boolean>(false);
+    const [resending, setResending] = useState<boolean>(false);
+    const [resettingPrice, setResettingPrice] = useState<boolean>(false);
+    const [previewEmail, setPreviewEmail] = useState<boolean>(false);
+
+    // Sync local form state whenever the selected booking changes.
+    useEffect(() => {
+      if (selectedBooking) {
+        setCustomAmount(((selectedBooking.amount_cents || 0) / 100).toFixed(2));
+        setPriceLabel(selectedBooking.price_label || "");
+        setAdminNote(selectedBooking.admin_note || "");
+      } else {
+        setCustomAmount("");
+        setPriceLabel("");
+        setAdminNote("");
+      }
+    }, [selectedReference, selectedBooking?.reference]);
+
+    async function patchBooking(reference: string, payload: Record<string, unknown>) {
+      try {
+        const data = await api(`/api/admin/bookings/${encodeURIComponent(reference)}`, {
+          method: "PATCH",
+          body: JSON.stringify(payload),
+        });
+        const updated: Booking = data.booking;
+        setBookings((prev) => prev.map((b) => (b.reference === reference ? updated : b)));
+        setStatus({ kind: "success", text: `Booking ${reference} updated.` });
+      } catch (e) {
+        setStatus({ kind: "error", text: e instanceof Error ? e.message : "Update failed." });
+      }
     }
-  }
 
-  async function resendBooking(reference: string) {
-    try {
-      await api(`/api/admin/bookings/${encodeURIComponent(reference)}/resend`, { method: "POST" });
-      setStatus({ kind: "success", text: `Invoice email resent for ${reference}.` });
-    } catch (e) {
-      setStatus({ kind: "error", text: e instanceof Error ? e.message : "Resend failed." });
+    async function saveCustomInvoice(event: React.FormEvent<HTMLFormElement>) {
+      event.preventDefault();
+      if (!selectedBooking) return;
+      const amount = Number(customAmount);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        setStatus({ kind: "error", text: "Please enter a valid amount greater than 0." });
+        return;
+      }
+      setSavingBooking(true);
+      try {
+        await patchBooking(selectedBooking.reference, {
+          amount_cents: Math.round(amount * 100),
+          price_label: priceLabel.trim() || "Custom price",
+          admin_note: adminNote.trim() || undefined,
+        });
+      } finally {
+        setSavingBooking(false);
+      }
     }
-  }
 
-  function buildWhatsappUrl(booking: Booking): string {
-    const text = [
-      `Saga X Space booking ${booking.reference}`,
-      `Name: ${booking.name || "?"}`,
-      `Date: ${booking.event_date || "?"} at ${booking.start_time || "?"}`,
-      `Package: ${booking.package_title || "?"}`,
-      `Amount: ${formatMyr(booking.amount_cents || 0)}`,
-      `Status: ${booking.status || "?"}`,
-    ].join("\n");
-    const phone = publicConfig?.whatsapp || "60137732703";
-    return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
-  }
+    async function resetCustomPrice() {
+      if (!selectedBooking) return;
+      setResettingPrice(true);
+      try {
+        await patchBooking(selectedBooking.reference, {
+          reset_price: true,
+          price_label: "Default price",
+        });
+      } finally {
+        setResettingPrice(false);
+      }
+    }
+
+    async function resendBookingWithCustomInvoice() {
+        if (!selectedBooking) return;
+        setResending(true);
+        try {
+          const data = await api(
+            `/api/admin/bookings/${encodeURIComponent(selectedBooking.reference)}/resend`,
+            { method: "POST" },
+          );
+          const result = data?.email ? ` (${data.email.error ? `email failed: ${data.email.error}` : "email sent"})` : "";
+          setStatus({ kind: "success", text: `Invoice email resent for ${selectedBooking.reference}${result}.` });
+        } catch (e) {
+          setStatus({ kind: "error", text: e instanceof Error ? e.message : "Resend failed." });
+        } finally {
+          setResending(false);
+        }
+      }
+
+    async function copyAlertText() {
+      if (!selectedBooking) return;
+      const text = buildWhatsappText(selectedBooking);
+      try {
+        await navigator.clipboard.writeText(text);
+        setStatus({ kind: "success", text: "Alert text copied to clipboard." });
+      } catch {
+        // Fallback: select-and-copy approach using a temp textarea
+        try {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          document.body.removeChild(ta);
+          setStatus({ kind: "success", text: "Alert text copied to clipboard." });
+        } catch {
+          setStatus({ kind: "error", text: "Could not copy to clipboard. Select the text manually." });
+        }
+      }
+    }
+
+    function buildWhatsappText(booking: Booking): string {
+      return [
+        `Saga X Space booking ${booking.reference}`,
+        `Name: ${booking.name || "?"}`,
+        `Email: ${booking.email || "?"}`,
+        `Date: ${booking.event_date || "?"} at ${booking.start_time || "?"}`,
+        `Package: ${booking.package_title || "?"}`,
+        `Amount: ${formatMyr(booking.amount_cents || 0)}${booking.price_label ? ` (${booking.price_label})` : ""}`,
+        `Status: ${booking.status || "?"}`,
+        booking.admin_note ? `Note: ${booking.admin_note}` : "",
+      ].filter(Boolean).join("\n");
+    }
+
+    function buildWhatsappUrl(booking: Booking): string {
+      const text = buildWhatsappText(booking);
+      const phone = publicConfig?.whatsapp || "60137732703";
+      return `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+    }
+
+    // Render the live email preview that will be sent. Mirrors what
+    // bookingEmailHtml produces on the backend.
+    function renderEmailPreview(booking: Booking): { subject: string; body: string } {
+      const subject = `${publicConfig?.site_name || "Saga X Space"} booking invoice ${booking.reference}`;
+      const lines = [
+        `Hi ${booking.name || "there"},`,
+        "",
+        `Thank you for booking ${publicConfig?.site_name || "Saga X Space"}. Here are your booking details:`,
+        "",
+        `  Reference : ${booking.reference}`,
+        `  Event date: ${booking.event_date || "?"}`,
+        `  Start time: ${booking.start_time || "?"}`,
+        `  Package   : ${booking.package_title || "?"}`,
+        `  Amount    : ${formatMyr(booking.amount_cents || 0)}${booking.price_label ? ` (${booking.price_label})` : ""}`,
+        "",
+        booking.payment_method === "billplz" && booking.payment_url
+          ? `Pay online: ${booking.payment_url}`
+          : `Pay via bank transfer to ${publicConfig?.bank_name || "Hong Leong Bank"} — ${publicConfig?.bank_account_name || "Saga X Ventures"} (${publicConfig?.bank_account_number || "3440 1065 516"}).`,
+        "",
+        `If you have any questions, reply to this email or message us on WhatsApp.`,
+        "",
+        `${publicConfig?.company_name || "Saga X Ventures"}`,
+      ];
+      return { subject, body: lines.join("\n") };
+    }
 
   return (
     <div className="page-shell admin-shell">
@@ -522,47 +645,130 @@ export default function AdminClient() {
                       </div>
 
                       <div className="admin-detail-grid">
-                        <div><span>Package</span><strong>{selectedBooking.package_title || ""}</strong></div>
-                        <div><span>Event date</span><strong>{selectedBooking.event_date || ""}</strong></div>
-                        <div><span>Start time</span><strong>{selectedBooking.start_time || ""}</strong></div>
-                        <div><span>Payment</span><strong>{selectedBooking.payment_method || ""}</strong></div>
-                        <div><span>Amount</span><strong>{formatMyr(selectedBooking.amount_cents || 0)}</strong></div>
-                        <div><span>Base price</span><strong>{formatMyr(selectedBooking.base_amount_cents || selectedBooking.amount_cents || 0)}</strong></div>
-                      </div>
+                                              <div><span>Package</span><strong>{selectedBooking.package_title || ""}</strong></div>
+                                              <div><span>Event date</span><strong>{selectedBooking.event_date || ""}</strong></div>
+                                              <div><span>Start time</span><strong>{selectedBooking.start_time || ""}</strong></div>
+                                              <div><span>Payment</span><strong>{selectedBooking.payment_method || ""}</strong></div>
+                                              <div><span>Amount</span><strong>{formatMyr(selectedBooking.amount_cents || 0)}</strong></div>
+                                              <div><span>Base price</span><strong>{formatMyr(selectedBooking.base_amount_cents || selectedBooking.amount_cents || 0)}</strong></div>
+                                            </div>
 
-                      <div className="admin-detail-actions">
-                        <button
-                          type="button"
-                          className="btn btn-primary"
-                          onClick={() => patchBooking(selectedBooking.reference, { status: "confirmed" })}
-                          disabled={selectedBooking.status === "confirmed"}
-                        >
-                          Mark confirmed
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-ghost"
-                          onClick={() => patchBooking(selectedBooking.reference, { status: "cancelled" })}
-                          disabled={selectedBooking.status === "cancelled"}
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-ghost"
-                          onClick={() => resendBooking(selectedBooking.reference)}
-                        >
-                          Resend invoice
-                        </button>
-                        <a
-                          className="btn btn-ghost"
-                          href={buildWhatsappUrl(selectedBooking)}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          WhatsApp alert
-                        </a>
-                      </div>
+                                            {/* Custom invoice editor — replaces the default invoice with
+                                                a custom amount / label / note before sending to the client. */}
+                                            <form className="admin-invoice-form" onSubmit={saveCustomInvoice}>
+                                              <div className="admin-invoice-head">
+                                                <p className="admin-kicker">Custom invoice</p>
+                                                <p className="muted-copy">
+                                                  Override the default amount and add a label / note for this client before resending.
+                                                </p>
+                                              </div>
+
+                                              <div className="admin-invoice-grid">
+                                                <label>
+                                                  Custom amount (MYR)
+                                                  <input
+                                                    type="number"
+                                                    min="0"
+                                                    step="0.01"
+                                                    value={customAmount}
+                                                    onChange={(e) => setCustomAmount(e.target.value)}
+                                                    placeholder="e.g. 120.00"
+                                                  />
+                                                </label>
+
+                                                <label>
+                                                  Price label
+                                                  <input
+                                                    type="text"
+                                                    value={priceLabel}
+                                                    onChange={(e) => setPriceLabel(e.target.value)}
+                                                    placeholder="Promo, special event, etc."
+                                                  />
+                                                </label>
+
+                                                <label className="admin-invoice-note">
+                                                  Admin note (internal)
+                                                  <textarea
+                                                    rows={3}
+                                                    value={adminNote}
+                                                    onChange={(e) => setAdminNote(e.target.value)}
+                                                    placeholder="Internal note — not sent to the client"
+                                                  />
+                                                </label>
+                                              </div>
+
+                                              <div className="admin-invoice-actions">
+                                                <button
+                                                  type="submit"
+                                                  className="btn btn-primary"
+                                                  disabled={savingBooking}
+                                                >
+                                                  {savingBooking ? "Saving…" : "Save invoice"}
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  className="btn btn-ghost"
+                                                  onClick={resetCustomPrice}
+                                                  disabled={resettingPrice}
+                                                >
+                                                  {resettingPrice ? "Resetting…" : "Reset to default price"}
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  className="btn btn-ghost"
+                                                  onClick={() => setPreviewEmail((v) => !v)}
+                                                >
+                                                  {previewEmail ? "Hide email preview" : "Preview email"}
+                                                </button>
+                                              </div>
+
+                                              {previewEmail && (() => {
+                                                // Use the live values from the form, so the preview
+                                                // reflects what the client will see *after* save.
+                                                const liveBooking = {
+                                                  ...selectedBooking,
+                                                  amount_cents: Number.isFinite(Number(customAmount))
+                                                    ? Math.round(Number(customAmount) * 100)
+                                                    : selectedBooking.amount_cents,
+                                                  price_label: priceLabel,
+                                                };
+                                                const preview = renderEmailPreview(liveBooking);
+                                                return (
+                                                  <div className="admin-email-preview" aria-live="polite">
+                                                    <p className="admin-kicker">Subject</p>
+                                                    <p className="admin-email-subject">{preview.subject}</p>
+                                                    <p className="admin-kicker" style={{ marginTop: 12 }}>Body</p>
+                                                    <pre className="admin-email-body">{preview.body}</pre>
+                                                  </div>
+                                                );
+                                              })()}
+                                            </form>
+
+                                            <div className="admin-detail-actions">
+                                              <button
+                                                type="button"
+                                                className="btn btn-primary"
+                                                onClick={resendBookingWithCustomInvoice}
+                                                disabled={resending}
+                                              >
+                                                {resending ? "Sending…" : "Resend invoice to client"}
+                                              </button>
+                                              <button
+                                                type="button"
+                                                className="btn btn-ghost"
+                                                onClick={copyAlertText}
+                                              >
+                                                Copy alert text
+                                              </button>
+                                              <a
+                                                className="btn btn-ghost"
+                                                href={buildWhatsappUrl(selectedBooking)}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                              >
+                                                WhatsApp alert
+                                              </a>
+                                            </div>
                     </>
                   )}
                 </aside>
