@@ -359,6 +359,73 @@
   cursor: not-allowed;
 }
 
+.admin-shell .btn-confirm {
+  background: var(--quaternary);
+  color: var(--fg);
+  border-color: var(--fg);
+  box-shadow: 4px 4px 0 0 var(--fg);
+}
+
+.admin-shell .btn-confirm:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 0 var(--fg);
+}
+
+.admin-shell .btn-danger {
+  background: #f43f5e;
+  color: #fff;
+  border-color: var(--fg);
+  box-shadow: 4px 4px 0 0 var(--fg);
+}
+
+.admin-shell .btn-danger:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 0 var(--fg);
+}
+
+.admin-shell .admin-status-row {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: var(--border-w) solid var(--fg);
+  border-radius: var(--radius-md);
+  background: #fff;
+  box-shadow: var(--pop-sm);
+  display: grid;
+  gap: 10px;
+}
+
+.admin-shell .admin-status-label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--muted-fg);
+}
+
+.admin-shell .admin-status-label select {
+  font: inherit;
+  font-weight: 500;
+  color: var(--fg);
+  padding: 8px 12px;
+  border: var(--border-w) solid var(--fg);
+  border-radius: var(--radius-sm);
+  background: var(--bg-soft);
+  box-shadow: 3px 3px 0 0 var(--fg);
+  cursor: pointer;
+}
+
+.admin-shell .admin-status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.admin-shell .admin-status-error {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #b91c1c;
+}
+
 .admin-shell .btn-ghost {
   background: transparent;
   color: var(--fg);
