@@ -219,10 +219,20 @@ export default function AdminClient() {
       setUnlocked(true);
       setStatus({ kind: "success", text: "Admin dashboard unlocked." });
       sessionStorage.setItem("sagax-admin-key", tempKey);
+      // Also set a cookie so the printable invoice page at /invoice/[ref]
+      // can authenticate without needing the key in the URL (which some
+      // browser extensions and link shorteners strip).
+      if (typeof document !== "undefined") {
+        const oneWeek = 7 * 24 * 60 * 60;
+        document.cookie = `admin_key=${encodeURIComponent(tempKey)}; path=/; max-age=${oneWeek}; SameSite=Lax`;
+      }
     } catch (e) {
       setUnlocked(false);
       setStatus({ kind: "error", text: e instanceof Error ? e.message : "Login failed." });
       sessionStorage.removeItem("sagax-admin-key");
+      if (typeof document !== "undefined") {
+        document.cookie = "admin_key=; path=/; max-age=0";
+      }
     }
   }, []);
 
@@ -243,6 +253,9 @@ export default function AdminClient() {
     setPublicConfig(null);
     setSelectedReference("");
     sessionStorage.removeItem("sagax-admin-key");
+    if (typeof document !== "undefined") {
+      document.cookie = "admin_key=; path=/; max-age=0";
+    }
     setStatus({ kind: "info", text: "Logged out." });
   }
 
@@ -465,14 +478,12 @@ export default function AdminClient() {
     }
 
     function buildInvoiceUrl(booking: Booking): string {
-      // Pass the admin key in the query string so the printable invoice
-      // page can authenticate without requiring a session login. The
-      // URL is short-lived (each click generates a fresh link) and
-      // sharing it is equivalent to sharing the admin key — only give
-      // it to clients you trust to view their own invoice.
-      const params = new URLSearchParams();
-      params.set("key", adminKey || "");
-      return `/invoice/${encodeURIComponent(booking.reference)}?${params.toString()}`;
+      // The printable invoice page at /invoice/[ref] reads the admin
+      // access key from the `admin_key` cookie that the admin login
+      // form sets. This keeps the URL clean and avoids the
+      // ?key=… being stripped by browser extensions or referrer
+      // scrubbing services.
+      return `/invoice/${encodeURIComponent(booking.reference)}`;
     }
 
     // Render the live email preview that will be sent. Mirrors what
