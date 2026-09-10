@@ -305,18 +305,57 @@ export default function AdminClient() {
     const [resettingPrice, setResettingPrice] = useState<boolean>(false);
     const [previewEmail, setPreviewEmail] = useState<boolean>(false);
 
+    // Status / lock-date controls. We track a draft so the dropdown reflects
+    // the optimistic value while the PATCH is in flight, and snap back to
+    // the server-side value on the next bookings refresh.
+    const [statusDraft, setStatusDraft] = useState<string>("");
+    const [updatingStatus, setUpdatingStatus] = useState<boolean>(false);
+    const [statusError, setStatusError] = useState<string | null>(null);
+
     // Sync local form state whenever the selected booking changes.
     useEffect(() => {
       if (selectedBooking) {
         setCustomAmount(((selectedBooking.amount_cents || 0) / 100).toFixed(2));
         setPriceLabel(selectedBooking.price_label || "");
         setAdminNote(selectedBooking.admin_note || "");
+        setStatusDraft(selectedBooking.status || "");
+        setStatusError(null);
       } else {
         setCustomAmount("");
         setPriceLabel("");
         setAdminNote("");
+        setStatusDraft("");
+        setStatusError(null);
       }
     }, [selectedReference, selectedBooking?.reference]);
+
+    async function setBookingStatus(reference: string, nextStatus: string) {
+      if (!reference || !nextStatus) return;
+      setUpdatingStatus(true);
+      setStatusError(null);
+      try {
+        const data = await api(
+          `/api/admin/bookings/${encodeURIComponent(reference)}`,
+          { method: "PATCH", body: JSON.stringify({ status: nextStatus }) }
+        );
+        const updated: Booking = data.booking;
+        setBookings((prev) => prev.map((b) => (b.reference === reference ? updated : b)));
+        setStatusDraft(updated.status || "");
+        setStatus({
+          kind: "success",
+          text:
+            nextStatus === "confirmed"
+              ? `Booking ${reference} confirmed — date is locked.`
+              : nextStatus === "cancelled"
+              ? `Booking ${reference} cancelled — date is released.`
+              : `Booking ${reference} set to ${nextStatus}.`,
+        });
+      } catch (e) {
+        setStatusError(e instanceof Error ? e.message : "Status update failed.");
+      } finally {
+        setUpdatingStatus(false);
+      }
+    }
 
     async function patchBooking(reference: string, payload: Record<string, unknown>) {
       try {
@@ -624,6 +663,64 @@ export default function AdminClient() {
                     <p className="muted-copy">
                       Override the default amount and add a label / note for this client before resending.
                     </p>
+
+                    <div className="admin-status-row" role="group" aria-label="Booking status">
+                      <label className="admin-status-label">
+                        Status
+                        <select
+                          value={statusDraft}
+                          onChange={(e) => setStatusDraft(e.target.value)}
+                          disabled={updatingStatus}
+                        >
+                          <option value="pending_payment">pending_payment</option>
+                          <option value="pending_review">pending_review</option>
+                          <option value="confirmed">confirmed</option>
+                          <option value="cancelled">cancelled</option>
+                        </select>
+                      </label>
+                      <div className="admin-status-actions">
+                        <button
+                          type="button"
+                          className="btn btn-primary"
+                          onClick={() => setBookingStatus(selectedBooking.reference, statusDraft)}
+                          disabled={updatingStatus || statusDraft === (selectedBooking.status || "")}
+                          title="Save the selected status and lock / release the date accordingly"
+                        >
+                          {updatingStatus ? "Saving status…" : "Save status"}
+                        </button>
+                        {selectedBooking.status !== "confirmed" && (
+                          <button
+                            type="button"
+                            className="btn btn-confirm"
+                            onClick={() => setBookingStatus(selectedBooking.reference, "confirmed")}
+                            disabled={updatingStatus}
+                            title="Mark the booking as paid and lock the date so it shows as fully booked"
+                          >
+                            Confirm &amp; lock date
+                          </button>
+                        )}
+                        {selectedBooking.status !== "cancelled" && (
+                          <button
+                            type="button"
+                            className="btn btn-danger"
+                            onClick={() => {
+                              if (typeof window !== "undefined" && window.confirm("Cancel this booking and release the date?")) {
+                                setBookingStatus(selectedBooking.reference, "cancelled");
+                              }
+                            }}
+                            disabled={updatingStatus}
+                            title="Cancel the booking and release the date for other clients"
+                          >
+                            Cancel booking
+                          </button>
+                        )}
+                      </div>
+                      {statusError && (
+                        <p className="admin-status-error" role="alert">
+                          {statusError}
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   <div className="admin-invoice-grid">
