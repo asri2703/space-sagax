@@ -26,6 +26,7 @@ type Props = {
   packages: Package[];
   initialAvailability: MonthAvailability;
   initialMonth: string;
+  initialPackage?: string | null;
   settings: Settings;
 };
 
@@ -37,14 +38,16 @@ const TIME_SLOTS = [
   "16:00", "17:00", "18:00", "19:00", "20:00",
 ];
 
-export function BookingFlow({ venue, packages, initialAvailability, initialMonth, settings }: Props) {
+export function BookingFlow({ venue, packages, initialAvailability, initialMonth, initialPackage, settings }: Props) {
   const router = useRouter();
   const [month, setMonth] = useState(initialMonth);
   const [availability, setAvailability] = useState<MonthAvailability>(initialAvailability);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<Step>(1);
   const [date, setDate] = useState<string | null>(null);
-  const [pkgKey, setPkgKey] = useState<"hour" | "four" | "full" | null>(null);
+  const [pkgKey, setPkgKey] = useState<"hour" | "four" | "full" | null>(
+    (initialPackage as "hour" | "four" | "full" | null) || null
+  );
   const [time, setTime] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -74,6 +77,11 @@ export function BookingFlow({ venue, packages, initialAvailability, initialMonth
       cancelled = true;
     };
   }, [month, venue.slug]);
+
+  // If the user came in with ?package=… and no date yet, show the
+  // step-1 calendar with the package pre-selected (handled in step 2).
+  // The form already initialises pkgKey from the prop; nothing else
+  // to do here — but we expose the hint in the summary card.
 
   const days = useMemo(() => buildCalendar(month, availability), [month, availability]);
 
@@ -184,8 +192,8 @@ export function BookingFlow({ venue, packages, initialAvailability, initialMonth
                   }}
                 >
                   <span className="calendar-day-num">{Number(day.date.slice(-2))}</span>
-                  {isToday && <span className="badge badge-mint calendar-day-badge">today</span>}
-                  {isBooked && <span className="badge badge-rose calendar-day-badge">full</span>}
+                  {isToday && <span className="calendar-day-badge badge-mint">today</span>}
+                  {isBooked && <span className="calendar-day-badge badge-rose">full</span>}
                 </button>
               );
             })}
