@@ -673,6 +673,110 @@
 }
 
 /* ============================================================
+ * Custom invoice editor (in booking detail panel)
+ * ============================================================ */
+.admin-shell .admin-invoice-form {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-soft);
+}
+
+.admin-shell .admin-invoice-head {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-shell .admin-invoice-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 540px) {
+  .admin-shell .admin-invoice-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.admin-shell .admin-invoice-grid label {
+  display: grid;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.7rem;
+  color: var(--fg);
+}
+
+.admin-shell .admin-invoice-grid label.admin-invoice-note {
+  grid-column: 1 / -1;
+}
+
+.admin-shell .admin-invoice-grid input,
+.admin-shell .admin-invoice-grid textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border: var(--border-w) solid var(--border);
+  background: var(--input-bg);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--fg);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+  resize: vertical;
+  transition: all var(--duration) var(--ease-bounce);
+}
+
+.admin-shell .admin-invoice-grid input:focus,
+.admin-shell .admin-invoice-grid textarea:focus {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: 0 4px 0 0 var(--ring);
+}
+
+.admin-shell .admin-invoice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.admin-shell .admin-email-preview {
+  margin-top: 8px;
+  padding: 14px 16px;
+  border: var(--border-w) solid var(--fg);
+  border-radius: var(--radius-md);
+  background: var(--input-bg);
+  box-shadow: var(--pop-sm);
+}
+
+.admin-shell .admin-email-subject {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin: 4px 0 0;
+}
+
+.admin-shell .admin-email-body {
+  margin: 6px 0 0;
+  padding: 12px;
+  background: var(--muted);
+  border-radius: var(--radius-sm);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--fg);
+}
+
+/* ============================================================
  * Empty state + notification card
  * ============================================================ */
 .admin-shell .empty-state {
