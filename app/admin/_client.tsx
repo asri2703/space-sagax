@@ -598,6 +598,143 @@ export default function AdminClient() {
               </form>
             </section>
 
+            <section id="custom-invoice" className="section admin-panel">
+              <div className="section-heading">
+                <p className="eyebrow">Custom invoice</p>
+                <h2>Build a one-off invoice and send it to your client.</h2>
+                <p>
+                  Pick a booking from the list below, then override the amount, label, and admin
+                  note. The next invoice email uses whatever is saved here.
+                </p>
+              </div>
+
+              {!selectedBooking ? (
+                <div className="admin-invoice-empty">
+                  <p className="muted-copy">
+                    Pick a booking from the <strong>Bookings</strong> section below to start a custom invoice.
+                    If there are no bookings yet, create one from the public site first.
+                  </p>
+                </div>
+              ) : (
+                <form className="admin-invoice-form" onSubmit={saveCustomInvoice}>
+                  <div className="admin-invoice-head">
+                    <p className="admin-kicker">
+                      Editing invoice for {selectedBooking.reference} — {selectedBooking.name || "Unnamed"}
+                    </p>
+                    <p className="muted-copy">
+                      Override the default amount and add a label / note for this client before resending.
+                    </p>
+                  </div>
+
+                  <div className="admin-invoice-grid">
+                    <label>
+                      Custom amount (MYR)
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={customAmount}
+                        onChange={(e) => setCustomAmount(e.target.value)}
+                        placeholder="e.g. 120.00"
+                      />
+                    </label>
+
+                    <label>
+                      Price label
+                      <input
+                        type="text"
+                        value={priceLabel}
+                        onChange={(e) => setPriceLabel(e.target.value)}
+                        placeholder="Promo, special event, etc."
+                      />
+                    </label>
+
+                    <label className="admin-invoice-note">
+                      Admin note (internal)
+                      <textarea
+                        rows={3}
+                        value={adminNote}
+                        onChange={(e) => setAdminNote(e.target.value)}
+                        placeholder="Internal note — not sent to the client"
+                      />
+                    </label>
+                  </div>
+
+                  <div className="admin-invoice-actions">
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={savingBooking}
+                    >
+                      {savingBooking ? "Saving…" : "Save invoice"}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={resetCustomPrice}
+                      disabled={resettingPrice}
+                    >
+                      {resettingPrice ? "Resetting…" : "Reset to default price"}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => setPreviewEmail((v) => !v)}
+                    >
+                      {previewEmail ? "Hide email preview" : "Preview email"}
+                    </button>
+                  </div>
+
+                  {previewEmail && (() => {
+                    // Use the live values from the form, so the preview
+                    // reflects what the client will see *after* save.
+                    const liveBooking = {
+                      ...selectedBooking,
+                      amount_cents: Number.isFinite(Number(customAmount))
+                        ? Math.round(Number(customAmount) * 100)
+                        : selectedBooking.amount_cents,
+                      price_label: priceLabel,
+                    };
+                    const preview = renderEmailPreview(liveBooking);
+                    return (
+                      <div className="admin-email-preview" aria-live="polite">
+                        <p className="admin-kicker">Subject</p>
+                        <p className="admin-email-subject">{preview.subject}</p>
+                        <p className="admin-kicker" style={{ marginTop: 12 }}>Body</p>
+                        <pre className="admin-email-body">{preview.body}</pre>
+                      </div>
+                    );
+                  })()}
+
+                  <div className="admin-invoice-actions">
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={resendBookingWithCustomInvoice}
+                      disabled={resending}
+                    >
+                      {resending ? "Sending…" : "Resend invoice to client"}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={copyAlertText}
+                    >
+                      Copy alert text
+                    </button>
+                    <a
+                      className="btn btn-ghost"
+                      href={buildWhatsappUrl(selectedBooking)}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      WhatsApp alert
+                    </a>
+                  </div>
+                </form>
+              )}
+            </section>
+
             <section id="bookings" className="section admin-panel">
               <div className="section-heading">
                 <p className="eyebrow">Bookings</p>

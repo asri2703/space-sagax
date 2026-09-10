@@ -684,6 +684,23 @@
   background: var(--bg-soft);
 }
 
+.admin-shell .admin-invoice-empty {
+  padding: 18px 22px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: var(--muted);
+}
+
+.admin-shell .admin-invoice-empty p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--muted-fg);
+}
+
+.admin-shell .admin-invoice-empty strong {
+  color: var(--accent);
+}
+
 .admin-shell .admin-invoice-head {
   display: grid;
   gap: 4px;
