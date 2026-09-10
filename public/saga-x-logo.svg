@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 120" width="360" height="120">
+  <defs>
+    <style>
+      .ink { fill: #0a2e8c; }
+      .stroke { stroke: #0a2e8c; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </defs>
+
+  <!-- Saga X brand mark. Two-stroke "X" with a long diagonal line
+       slicing through the composition, followed by the SAGA-X wordmark. -->
+
+  <!-- Long diagonal that pierces the entire mark -->
+  <line class="stroke" stroke-width="2" x1="14" y1="14" x2="346" y2="106" />
+
+  <!-- Outlined X — two thick crossed strokes -->
+  <path class="stroke" stroke-width="5" d="M 38 30 L 102 90" />
+  <path class="stroke" stroke-width="5" d="M 102 30 L 38 90" />
+
+  <!-- Inner solid X (slightly smaller, overlapping) -->
+  <path class="ink" d="M 60 44 L 80 60 L 60 76 L 56 72 L 72 60 L 56 48 Z" />
+
+  <!-- Wordmark -->
+  <text x="125" y="68"
+        fill="#0a2e8c"
+        font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+        font-weight="700"
+        font-size="32"
+        letter-spacing="6">SAGA-X</text>
+</svg>
