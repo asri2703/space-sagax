@@ -315,6 +315,7 @@ export default function AdminClient() {
     const [adminNote, setAdminNote] = useState<string>("");
     const [savingBooking, setSavingBooking] = useState<boolean>(false);
     const [resending, setResending] = useState<boolean>(false);
+    const [downloadingPdf, setDownloadingPdf] = useState<boolean>(false);
     const [resettingPrice, setResettingPrice] = useState<boolean>(false);
     const [previewEmail, setPreviewEmail] = useState<boolean>(false);
 
@@ -478,12 +479,55 @@ export default function AdminClient() {
     }
 
     function buildInvoiceUrl(booking: Booking): string {
-      // The printable invoice page at /invoice/[ref] reads the admin
-      // access key from the `admin_key` cookie that the admin login
-      // form sets. This keeps the URL clean and avoids the
-      // ?key=… being stripped by browser extensions or referrer
-      // scrubbing services.
-      return `/invoice/${encodeURIComponent(booking.reference)}`;
+      // PDF endpoint. Returns the URL the admin client fetches to download
+      // the generated PDF. Auth is via the `admin_key` cookie set on
+      // login (or the x-admin-key header) so the URL itself is clean.
+      return `/api/admin/invoice/${encodeURIComponent(booking.reference)}/pdf`;
+    }
+
+    async function downloadInvoicePdf(booking: Booking) {
+      if (!booking?.reference) return;
+      setDownloadingPdf(true);
+      try {
+        const response = await fetch(
+          `/api/admin/invoice/${encodeURIComponent(booking.reference)}/pdf`,
+          {
+            credentials: "include",
+            headers: { "x-admin-key": adminKey || "" },
+          }
+        );
+        if (!response.ok) {
+          let message = `Download failed (${response.status})`;
+          try {
+            const data = await response.json();
+            if (data?.error) message = data.error;
+          } catch {
+            // not JSON
+          }
+          throw new Error(message);
+        }
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = `invoice-${booking.reference}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        // Free the object URL after the click has been processed.
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+        setStatus({
+          kind: "success",
+          text: `Invoice ${booking.reference} downloaded.`,
+        });
+      } catch (e) {
+        setStatus({
+          kind: "error",
+          text: e instanceof Error ? e.message : "Could not download invoice.",
+        });
+      } finally {
+        setDownloadingPdf(false);
+      }
     }
 
     // Render the live email preview that will be sent. Mirrors what
@@ -855,15 +899,15 @@ export default function AdminClient() {
                       <div className="admin-detail-row" data-row="share">
                         <p className="admin-kicker">Send &amp; share</p>
                         <div className="admin-detail-actions">
-                          <a
+                          <button
+                            type="button"
                             className="btn btn-primary"
-                            href={buildInvoiceUrl(selectedBooking)}
-                            target="_blank"
-                            rel="noreferrer"
-                            title="Open a printable invoice for this booking — print or save as PDF to send to the client"
+                            onClick={() => downloadInvoicePdf(selectedBooking)}
+                            disabled={downloadingPdf}
+                            title="Download a PDF invoice for this booking — ready to forward to the client"
                           >
-                            Download invoice
-                          </a>
+                            {downloadingPdf ? "Generating PDF…" : "Download invoice"}
+                          </button>
                           <button
                             type="button"
                             className="btn btn-primary"
