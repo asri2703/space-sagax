@@ -24,6 +24,7 @@ import {
   ClockIcon,
   SparkleIcon,
 } from "@/components/Icons";
+import { HeroIllustration } from "@/components/HeroIllustration";
 
 export const dynamic = "force-dynamic";
 
@@ -57,33 +58,41 @@ export default async function Home() {
 
         <Confetti variant="hero" />
 
-        <div className="hero-inner">
-          <span className="kicker">
-            <PartyIcon size={14} style={{ display: "inline", verticalAlign: "-2px", marginRight: 6 }} />
-            Multi-venue hall rental · Senawang
-          </span>
-          <h1 className="display-1" style={{ marginTop: 20 }}>
-            A fun space for your next{" "}
-            <span className="accent-violet squiggle">celebration.</span>
-          </h1>
-          <p className="lead">
-            {settings.company_name} — bright, easy-to-book halls in Senawang. Reserve a slot, pay via
-            Billplz, and we&apos;ll lock the date for you.
-          </p>
-          <div className="hero-cta">
-            <Link href={`/book?venue=${featured?.slug || "saga-x-space"}`} className="btn btn-primary btn-lg">
-              Book a slot
-              <span className="btn-icon-circle">
-                <ArrowRightIcon size={16} />
-              </span>
-            </Link>
-            <Link href="#venues" className="btn btn-ghost btn-lg">View venues</Link>
+        <div className="hero-grid">
+          <div className="hero-inner">
+            <span className="kicker">
+              <PartyIcon size={14} style={{ display: "inline", verticalAlign: "-2px", marginRight: 6 }} />
+              Multi-venue hall rental · Senawang
+            </span>
+            <h1 className="display-1" style={{ marginTop: 20 }}>
+              A fun space for your next{" "}
+              <span className="accent-violet squiggle">celebration.</span>
+            </h1>
+            <p className="lead">
+              {settings.company_name} — bright, easy-to-book halls in Senawang. Reserve a slot, pay via
+              Billplz, and we&apos;ll lock the date for you.
+            </p>
+            <div className="hero-cta">
+              <Link href={`/book?venue=${featured?.slug || "saga-x-space"}`} className="btn btn-primary btn-lg">
+                Book a slot
+                <span className="btn-icon-circle">
+                  <ArrowRightIcon size={16} />
+                </span>
+              </Link>
+              <Link href="#venues" className="btn btn-ghost btn-lg">View venues</Link>
+            </div>
+            <div className="badge-row">
+              <span className="badge violet">Billplz</span>
+              <span className="badge pink">Lock the date</span>
+              <span className="badge mint">Instant confirmation</span>
+              <span className="badge cream">Senawang</span>
+            </div>
           </div>
-          <div className="badge-row">
-            <span className="badge violet">Billplz</span>
-            <span className="badge pink">Lock the date</span>
-            <span className="badge mint">Instant confirmation</span>
-            <span className="badge cream">Senawang</span>
+
+          <div className="hero-art">
+            <div className="hero-art-frame">
+              <HeroIllustration />
+            </div>
           </div>
         </div>
       </section>

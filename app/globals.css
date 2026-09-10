@@ -132,7 +132,7 @@ a:hover { color: var(--secondary); }
  * Container
  * ============================================================ */
 .container {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 0 var(--sp-5);
   position: relative;
@@ -367,6 +367,55 @@ a:hover { color: var(--secondary); }
   position: relative;
   padding: var(--sp-9) 0 var(--sp-7);
   overflow: hidden;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: var(--sp-7);
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+@media (max-width: 900px) {
+  .hero-grid { grid-template-columns: 1fr; gap: var(--sp-6); }
+}
+.hero-art {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 420px;
+}
+.hero-art-frame {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-art-frame::before {
+  content: "";
+  position: absolute;
+  inset: -16px;
+  background: var(--tertiary);
+  border: var(--border-w) solid var(--fg);
+  border-radius: var(--radius-xl);
+  transform: rotate(3deg);
+  z-index: -1;
+  box-shadow: var(--pop-md);
+}
+.hero-art-frame::after {
+  content: "";
+  position: absolute;
+  inset: -16px;
+  background: var(--secondary);
+  border: var(--border-w) solid var(--fg);
+  border-radius: var(--radius-xl);
+  transform: rotate(-3deg);
+  z-index: -2;
+  box-shadow: var(--pop-md);
 }
 .hero-inner {
   position: relative;
