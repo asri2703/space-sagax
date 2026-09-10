@@ -23,6 +23,50 @@
   text-align: center;
 }
 
+.invoice-shell .invoice-error strong {
+  color: #b91c1c;
+}
+
+.invoice-shell .invoice-error a {
+  color: #8b5cf6;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.invoice-shell .invoice-error-detail {
+  max-width: 520px;
+  margin: 18px auto 0;
+  padding: 14px 18px;
+  background: #fff;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.invoice-shell .invoice-error-detail summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #1e293b;
+  outline: none;
+}
+
+.invoice-shell .invoice-error-detail summary:focus {
+  text-decoration: underline;
+}
+
+.invoice-shell .invoice-error-detail ol {
+  margin: 12px 0 0;
+  padding-left: 22px;
+  line-height: 1.6;
+}
+
+.invoice-shell .invoice-error-detail a {
+  color: #8b5cf6;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
 /* ----- Toolbar (only on screen, hidden on print) ----- */
 .invoice-shell .invoice-toolbar {
   max-width: 820px;

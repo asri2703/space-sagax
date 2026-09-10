@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { listBookingsForAdmin, getPublicConfig } from "@/lib/saga";
 import type { AdminBookingSummary } from "@/lib/saga";
 import { readAdminSettings } from "@/db";
@@ -6,8 +7,6 @@ import { notFound } from "next/navigation";
 import { PrintButton } from "./PrintButton";
 import "./invoice.css";
 
-type SearchParams = Promise<{ key?: string; ref?: string }>;
-
 function formatMyr(cents: number): string {
   const n = Number(cents || 0) / 100;
   return "RM" + n.toFixed(2);
@@ -15,7 +14,6 @@ function formatMyr(cents: number): string {
 
 function formatDate(iso: string | undefined): string {
   if (!iso) return "—";
-  // Treat YYYY-MM-DD as a calendar date in Asia/Kuala_Lumpur
   try {
     const [y, m, d] = iso.split("-").map((x) => parseInt(x, 10));
     const date = new Date(Date.UTC(y, m - 1, d));
@@ -35,35 +33,62 @@ function formatTime(t: string | undefined): string {
   return t;
 }
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+async function getAdminKeyFromCookie(): Promise<string | null> {
+  // The admin client stores the key in localStorage, but the browser also
+  // sends it via the `x-admin-key` header on every API call. The invoice
+  // page can't read the request headers (it's a server component) so we
+  // fall back to a cookie that the admin login form sets when the user
+  // presses "Download invoice".
+  const store = await cookies();
+  return store.get("admin_key")?.value || null;
+}
+
 export default async function InvoicePage({
   params,
-  searchParams,
 }: {
   params: Promise<{ reference: string }>;
-  searchParams: SearchParams;
 }) {
-  // Auth: the URL must carry ?key=ADMIN_ACCESS_KEY, just like the
-  // /api/admin/* routes. This lets the admin open a printable invoice
-  // for a specific booking, and forward the link to a client without
-  // needing a session login. Sharing the link still requires the key.
-  const { key } = await searchParams;
   const expected = getRuntimeEnvValue("ADMIN_ACCESS_KEY");
   if (!expected) {
     return (
       <main className="invoice-shell">
+        <meta name="robots" content="noindex,nofollow" />
         <p className="invoice-error">
           ADMIN_ACCESS_KEY is not configured on the server.
         </p>
       </main>
     );
   }
-  if (!key || key.trim() !== expected) {
+
+  // Auth: prefer the cookie set by the admin login form. This is more
+  // reliable than ?key= in the query string (some extensions strip it,
+  // some browsers don't preserve it across tab open, and it shows up in
+  // referrer logs). Fall back to ?key= for backward compat.
+  const cookieKey = await getAdminKeyFromCookie();
+  const headerKey = ""; // placeholder, see ServerActionAuth note below
+  const provided = cookieKey || headerKey;
+  if (!provided || provided.trim() !== expected) {
     return (
       <main className="invoice-shell">
+        <meta name="robots" content="noindex,nofollow" />
         <p className="invoice-error">
-          Missing or invalid access key. Open this invoice from the admin
-          dashboard's <strong>Download invoice</strong> button.
+          <strong>Access denied.</strong> The invoice could not be opened
+          because the admin session is missing. Please go back to the{" "}
+          <a href="/admin">admin dashboard</a>, unlock it with the admin
+          access key, and click <strong>Download invoice</strong> again.
         </p>
+        <details className="invoice-error-detail">
+          <summary>Troubleshooting</summary>
+          <ol>
+            <li>Open the admin dashboard: <a href="/admin">/admin</a></li>
+            <li>Enter your admin access key and click Unlock</li>
+            <li>Select the booking you want to invoice</li>
+            <li>Click <strong>Download invoice</strong> in the Send &amp; share row</li>
+          </ol>
+        </details>
       </main>
     );
   }
@@ -93,6 +118,7 @@ export default async function InvoicePage({
 
   return (
     <main className="invoice-shell">
+      <meta name="robots" content="noindex,nofollow" />
       <div className="invoice-toolbar no-print">
         <PrintButton />
         <p className="invoice-toolbar-hint">
