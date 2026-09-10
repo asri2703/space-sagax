@@ -1,44 +1,48 @@
-import { getPublicConfig, updateAdminSettingsFromInput } from "@/lib/saga";
-import { readAdminSettings } from "@/db";
-import { getRuntimeEnvValue } from "@/lib/runtime-env";
+// GET   /api/admin/settings
+// PATCH /api/admin/settings
+//   Admin: read or update the singleton settings row.
 
-function ensureAdminKey(request: Request) {
-  const expected = getRuntimeEnvValue("ADMIN_ACCESS_KEY");
-  if (!expected) {
-    return Response.json({ error: "ADMIN_ACCESS_KEY is not configured in local.env" }, { status: 503 });
-  }
-  const key = request.headers.get("x-admin-key") || request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") || "";
-  if (key.trim() !== expected) {
-    return Response.json({ error: "Invalid admin access key" }, { status: 401 });
-  }
-  return null;
-}
+import { getPublicSettings, updateAdminSettings } from "@/lib/data";
+import { requireAdmin } from "@/lib/admin-auth";
 
-export async function GET(request: Request) {
-  const denied = ensureAdminKey(request);
+export const dynamic = "force-dynamic";
+
+export async function GET() {
+  const denied = await requireAdmin();
   if (denied) return denied;
-  return Response.json({
-    settings: await readAdminSettings(),
-    public: await getPublicConfig(),
-  });
+  try {
+    const settings = await getPublicSettings();
+    return Response.json({ settings });
+  } catch (err) {
+    console.error("[/api/admin/settings GET]", err);
+    return Response.json({ error: err instanceof Error ? err.message : "Failed" }, { status: 500 });
+  }
 }
 
 export async function PATCH(request: Request) {
-  const denied = ensureAdminKey(request);
+  const denied = await requireAdmin();
   if (denied) return denied;
-
   try {
-    const body = await request.json();
-    const settings = await updateAdminSettingsFromInput(body as Record<string, unknown>);
-    return Response.json({
-      ok: true,
-      settings,
-      public: await getPublicConfig(),
-    });
-  } catch (error) {
-    return Response.json(
-      { error: error instanceof Error ? error.message : "Failed to update settings" },
-      { status: 400 }
-    );
+    const body = (await request.json()) as Record<string, unknown>;
+    const patch: Record<string, unknown> = {};
+    for (const k of [
+      "bank_name",
+      "bank_account_number",
+      "bank_account_name",
+      "whatsapp",
+      "email",
+      "company_name",
+      "resend_from",
+    ]) {
+      if (typeof body[k] === "string") patch[k] = body[k];
+    }
+    if (Array.isArray(body.signature_lines)) {
+      patch.signature_lines = body.signature_lines.map(String);
+    }
+    const settings = await updateAdminSettings(patch as never);
+    return Response.json({ settings });
+  } catch (err) {
+    console.error("[/api/admin/settings PATCH]", err);
+    return Response.json({ error: err instanceof Error ? err.message : "Failed" }, { status: 500 });
   }
 }
